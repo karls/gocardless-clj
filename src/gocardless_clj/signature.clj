@@ -1,5 +1,6 @@
 (ns gocardless-clj.signature
-  (:require [pandect.core :refer [sha256-hmac]])
+  (:require [pandect.core :refer [sha256-hmac]]
+            [gocardless-clj.protocols :refer [flatten-params]])
   (:import java.net.URLEncoder))
 
 (defn new-ns
@@ -9,12 +10,7 @@
        (str ns "[" k "]")
        k)))
 
-(defprotocol PFlattable
-  (flatten-params [coll ns]
-    "Flatten params according to
-    https://developer.gocardless.com/#constructing-the-parameter-array"))
-
-(extend-protocol PFlattable
+(extend-protocol gocardless-clj.protocols/PFlattenable
   clojure.lang.PersistentHashMap
   (flatten-params [coll ns]
     (let [pairs (map #(flatten-params %2 (new-ns ns %1)) (keys coll) (vals coll))]
