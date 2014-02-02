@@ -132,13 +132,26 @@
   ([params account]))
 
 (defn new-bill
-  [{:keys [amount] :as opts} account])
+  [{:keys [amount] :as opts} account]
+  {:pre [(number? amount)
+         (> amount 1.0)]}
+  "new-bill")
 
 (defn new-subscription
-  [{:keys [amount interval-length interval-unit] :as opts} account])
+  [{:keys [max-amount interval-length interval-unit] :as opts} account]
+  {:pre [(number? max-amount)
+         (number? interval-length)
+         (pos? interval-length)
+         (contains? #{"day" "week" "month"} interval-unit)]}
+  "new-subscription")
 
 (defn new-pre-authorization
-  [{:keys [amount interval-length interval-unit] :as opts} account])
+  [{:keys [max-amount interval-length interval-unit] :as opts} account]
+  {:pre [(number? max-amount)
+         (number? interval-length)
+         (pos? interval-length)
+         (contains? #{"day" "week" "month"} interval-unit)]}
+  "new-pre-authorization")
 
-(defn confirm
-  [resource account])
+(defn confirm-resource
+  [params account])
