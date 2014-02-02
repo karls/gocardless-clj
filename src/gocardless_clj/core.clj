@@ -3,7 +3,19 @@
             [gocardless-clj.resources :refer :all]
             [gocardless-clj.protocols :refer :all]))
 
+(defn- dispatch-fn
+  "The dispatch function for resource functions."
+  [arg & _]
+  (class arg))
+
 (defn make-account
+  "Create an `account` function based on account details.
+
+  Returns a function that closes over account details and takes either a
+  function, a function and an ID or a function and some key-value pairs.
+
+  The argument function can be any of the supported resource-functions:
+  customers, payouts, bills, subscriptions or pre-authorizations."
   [account-details]
   (fn
     ([f] (f account-details))
@@ -13,11 +25,19 @@
          (f args account-details)))))
 
 (defn details
+  "Get the account details."
   [account]
   (-> (http/path "merchants" (:merchant-id account))
       (http/api-get account)))
 
-(defmulti customers (fn [arg & _] (class arg)))
+(defmulti customers
+  "Retrieve merchant's customers or a single customer.
+
+  Takes as arguments either the account-map, an ID of a customer and the
+  account-map, or a params-map and the account-map.
+
+  This is normally passed into the function returned from `make-account`."
+  dispatch-fn)
 (defmethod customers
   java.lang.String
   [id account]
@@ -29,7 +49,14 @@
          (http/api-get account)))
   ([params account] "Params"))
 
-(defmulti payouts (fn [arg & _] (class arg)))
+(defmulti payouts
+  "Retrieve merchant's payouts or a single payout.
+
+  Takes as arguments either the account-map, an ID of a payout and the
+  account-map, or a params-map and the account-map.
+
+  This is normally passed into the function returned from `make-account`."
+  dispatch-fn)
 (defmethod payouts
   java.lang.String
   [id account]
@@ -41,7 +68,14 @@
          (http/api-get account)))
   ([params account] "Params"))
 
-(defmulti bills (fn [arg & _] (class arg)))
+(defmulti bills
+  "Retrieve merchant's bills or a single bill.
+
+  Takes as arguments either the account-map, an ID of a bill and the
+  account-map, or a params-map and the account-map.
+
+  This is normally passed into the function returned from `make-account`."
+  dispatch-fn)
 (defmethod bills
   java.lang.String
   [id account]
@@ -54,7 +88,14 @@
        (map map->Bill bills)))
   ([params account] "Params"))
 
-(defmulti subscriptions (fn [arg & _] (class arg)))
+(defmulti subscriptions
+  "Retrieve merchant's subscriptions or a single subscription.
+
+  Takes as arguments either the account-map, an ID of a subscription and the
+  account-map, or a params-map and the account-map.
+
+  This is normally passed into the function returned from `make-account`."
+  dispatch-fn)
 (defmethod subscriptions
   java.lang.String
   [account id]
@@ -68,7 +109,14 @@
        (map map->Subscription subscriptions)))
   ([params account] "Params"))
 
-(defmulti pre-authorizations (fn [arg & _] (class arg)))
+(defmulti pre-authorizations
+  "Retrieve merchant's pre-authorizations or a single pre-authorization.
+
+  Takes as arguments either the account-map, an ID of a pre-authorization and the
+  account-map, or a params-map and the account-map.
+
+  This is normally passed into the function returned from `make-account`."
+  dispatch-fn)
 (defmethod pre-authorizations
   java.lang.String
   [account id]
