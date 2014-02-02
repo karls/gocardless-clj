@@ -1,6 +1,6 @@
 (ns gocardless-clj.resources
   (:require [gocardless-clj.protocols :refer :all]
-            [gocardless-clj.http :as http]))
+            [gocardless-clj.client :as client]))
 
 (defrecord Bill [id]
   gocardless-clj.protocols/PCancellable
@@ -9,7 +9,7 @@
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (-> (http/api-put account (http/path (:uri resource) "cancel"))
+      (-> (client/api-put account (client/path (:uri resource) "cancel"))
           map->Bill)))
 
   gocardless-clj.protocols/PRetriable
@@ -18,7 +18,7 @@
 
   (retry [resource account]
     (when (retriable? resource)
-      (-> (http/api-post account (http/path (:uri resource) "retry"))
+      (-> (client/api-post account (client/path (:uri resource) "retry"))
           map->Bill))))
 
 (defrecord Subscription [id]
@@ -28,7 +28,7 @@
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (-> (http/api-put account (http/path (:uri resource) "cancel"))
+      (-> (client/api-put account (client/path (:uri resource) "cancel"))
           map->Subscription))))
 
 (defrecord PreAuthorization [id]
@@ -38,5 +38,5 @@
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (-> (http/api-put account (http/path (:uri resource) "cancel"))
+      (-> (client/api-put account (client/path (:uri resource) "cancel"))
           map->PreAuthorization))))

@@ -1,5 +1,5 @@
 (ns gocardless-clj.core
-  (:require [gocardless-clj.http :as http]
+  (:require [gocardless-clj.client :as client]
             [gocardless-clj.resources :refer :all]
             [gocardless-clj.protocols :refer :all]))
 
@@ -27,8 +27,8 @@
 (defn details
   "Get the account details."
   [account]
-  (-> (http/path "merchants" (:merchant-id account))
-      (http/api-get account)))
+  (-> (client/path "merchants" (:merchant-id account))
+      (client/api-get account)))
 
 (defmulti customers
   "Retrieve merchant's customers or a single customer.
@@ -41,12 +41,12 @@
 (defmethod customers
   java.lang.String
   [id account]
-     (http/api-get (http/path "users" id) account))
+     (client/api-get (client/path "users" id) account))
 (defmethod customers
   clojure.lang.IPersistentMap
   ([account]
-     (-> (http/path "merchants" (:merchant-id account) "users")
-         (http/api-get account)))
+     (-> (client/path "merchants" (:merchant-id account) "users")
+         (client/api-get account)))
   ([params account] "Params"))
 
 (defmulti payouts
@@ -60,12 +60,12 @@
 (defmethod payouts
   java.lang.String
   [id account]
-  (http/api-get account (http/path "payouts" id)))
+  (client/api-get account (client/path "payouts" id)))
 (defmethod payouts
   clojure.lang.IPersistentMap
   ([account]
-     (-> (http/path "merchants" (:merchant-id account) "payouts")
-         (http/api-get account)))
+     (-> (client/path "merchants" (:merchant-id account) "payouts")
+         (client/api-get account)))
   ([params account] "Params"))
 
 (defmulti bills
@@ -79,12 +79,13 @@
 (defmethod bills
   java.lang.String
   [id account]
-  (map->Bill (http/api-get account (http/path "bills" id))))
+  (-> (client/api-get account (client/path "bills" id))
+      map->Bill))
 (defmethod bills
   clojure.lang.IPersistentMap
   ([account]
-     (let [bills (-> (http/path "merchants" (:merchant-id account) "bills")
-                     (http/api-get account))]
+     (let [bills (-> (client/path "merchants" (:merchant-id account) "bills")
+                     (client/api-get account))]
        (map map->Bill bills)))
   ([params account] "Params"))
 
@@ -99,13 +100,13 @@
 (defmethod subscriptions
   java.lang.String
   [account id]
-  (-> (http/api-get account (http/path "subscriptions" id))
+  (-> (client/api-get account (client/path "subscriptions" id))
       (map->Subscription)))
 (defmethod subscriptions
   clojure.lang.IPersistentMap
   ([account]
-     (let [subscriptions  (-> (http/path "merchants" (:merchant-id account) "subscriptions")
-                              (http/api-get account))]
+     (let [subscriptions  (-> (client/path "merchants" (:merchant-id account) "subscriptions")
+                              (client/api-get account))]
        (map map->Subscription subscriptions)))
   ([params account] "Params"))
 
@@ -120,13 +121,13 @@
 (defmethod pre-authorizations
   java.lang.String
   [account id]
-  (-> (http/api-get account (http/path "pre_authorizations" id))
+  (-> (client/api-get account (client/path "pre_authorizations" id))
       map->PreAuthorization))
 (defmethod pre-authorizations
   clojure.lang.IPersistentMap
   ([account]
-     (let [pre-auths (-> (http/path "merchants" (:merchant-id account) "pre_authorizations")
-                         (http/api-get account))]
+     (let [pre-auths (-> (client/path "merchants" (:merchant-id account) "pre_authorizations")
+                         (client/api-get account))]
        (map map->PreAuthorization pre-auths)))
   ([params account]))
 

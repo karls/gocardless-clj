@@ -1,4 +1,4 @@
-(ns gocardless-clj.http
+(ns gocardless-clj.client
   (:require [clj-http.client :as client]))
 
 (defn ua-string []

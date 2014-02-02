@@ -1,6 +1,6 @@
-(ns gocardless-clj.t-http
+(ns gocardless-clj.t-client
   (:use midje.sweet)
-  (:use gocardless-clj.http)
+  (:use gocardless-clj.client)
   (:use clj-http.fake)
   (:require [cheshire.core :as json]))
 
