@@ -18,7 +18,8 @@
   (api-url "http://google.com" account) => "http://google.com"
   (api-url "https://google.com" account) => "https://google.com"
   (api-url "bills/BILL1" {:environment :live}) => "https://gocardless.com/api/v1/bills/BILL1"
-  (api-url "bills/BILL1" account) => "https://sandbox.gocardless.com/api/v1/bills/BILL1")
+  (api-url "bills/BILL1" account) => "https://sandbox.gocardless.com/api/v1/bills/BILL1"
+  (api-url "bills/BILL1" {:environment :foo}) => (throws IllegalArgumentException))
 
 (with-fake-routes-in-isolation
   {"https://sandbox.gocardless.com/api/v1/bills/BILL1"
