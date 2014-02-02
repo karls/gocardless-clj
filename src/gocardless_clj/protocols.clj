@@ -7,8 +7,8 @@
 
 (defprotocol PCancellable
   (cancelable? [resource] "Check if the resource can be cancelled.")
-  (cancel [resource] "Cancel a resource."))
+  (cancel [resource account] "Cancel a resource."))
 
 (defprotocol PRetriable
   (retriable? [resource] "Check if the resource can be retried.")
-  (retry [resource] "Retry a resource."))
+  (retry [resource account] "Retry a resource."))
