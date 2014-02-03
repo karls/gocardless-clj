@@ -54,7 +54,7 @@
 
   Percent-encodes both key and value and joins them with `=`."
   [keyval-pair]
-  (apply str (interpose "=" (map percent-encode keyval-pair))))
+  (clojure.string/join "=" (map percent-encode keyval-pair)))
 
 (defn normalise-params
   "Genrates a percent-encoded query string.
@@ -63,7 +63,7 @@
   are joined with `&`."
   [params]
   (let [flattened-sorted (-> params (flatten-params nil) sort)]
-    (apply str (interpose "&" (map normalise-keyval flattened-sorted)))))
+    (clojure.string/join "&" (map normalise-keyval flattened-sorted))))
 
 (defn sign-params
   [params key]
