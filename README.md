@@ -27,12 +27,7 @@ See the GoCardless API docs for notes on filtering and pagination.
 ### Installing
 
 `gocardless-clj` is available on Clojars, at https://clojars.org/gocardless-clj.
-
-Add `gocardless-clj` to your *project.clj*:
-
-```
-[gocardless-clj "0.2.0"]
-```
+Just copy and paste the relevant line from Clojars into your *project.clj*.
 
 ## Usage
 
