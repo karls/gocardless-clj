@@ -4,6 +4,8 @@ A Clojure library for the GoCardless API.
 
 ## Status
 
+[![Build Status](https://travis-ci.org/karls/gocardless-clj.png?branch=master)](https://travis-ci.org/karls/gocardless-clj)
+
 The library implements most of the functionality for merchants, as
 described in the GoCardless API docs. Partner integrations are currently not
 supported.
