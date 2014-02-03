@@ -9,7 +9,8 @@ described in the GoCardless API docs. That means that parter integrations are
 not supported.
 
 Although the API is pretty clean and should be fairly easy to use, some nice
-things are currently not in place or are rough around the edges.
+things are currently not in place or are rough around the edges. This also means
+that the API is in flux and may change at any time.
 
 * Automatic pagination of results is not supported, which means that you'll have
   to paginate manually.
@@ -23,7 +24,7 @@ See the GoCardless API docs for notes on filtering and pagination.
 
 ## Usage
 
-All the core functionality is available in `core.clj`.
+All the core functionality is available in *core.clj*.
 
 ```clj
 (ns user
@@ -45,17 +46,18 @@ All the core functionality is available in `core.clj`.
 (merchant bills)
 
 ;; get a specific bill
-(merchant bills "bill id")
+(merchant bills "id")
 
 ;; cancel a bill
-(def bill (merchant bills "bill id"))
-(merchant cancel bill)
+(def my-bill (merchant bills "id"))
+(cancelable? my-bill) ;; => true
+(merchant cancel my-bill)
 
 ;; get the first page of your subscriptions, 10 per page
 (merchant subscriptions {:per_page 10})
 
 ;; create a new bill with minimal parameters
-(merchant new-bill {:amount 10.0})
+(merchant new-bill :amount 10.0)
 
 ;; create a new bill, but pass in more information
 (merchant new-bill {:amount 10.0
@@ -74,6 +76,45 @@ All the core functionality is available in `core.clj`.
 ;; details.
 (def params (:query-params request))
 (confirm-resource params account)
+```
+
+### Internal API notes
+
+In order to provide a nice and consitent API externally, some compromises
+had to be made internally in terms of clarity of the code.
+
+The first function that's worth investigating it `(make-account)` located in
+*core.clj*. Essentially, it takes a map of account details and produces a
+multi-arity function that closes over the account details. This makes it possible
+to declare your merchant account with `(make-account account-details)` and
+use the returned closure for making requests.
+
+The returned closure takes either a function, a function and some param (an ID
+or a params map), or a function and some keys and values. Passing a function
+and a map is equivalent to passing a function and keys-values.
+
+The functions for retrieving resources (`customers`, `bills` etc) are
+implemented as multimethods that have different implementations based on the
+class of the first argument as well as the number of arguments they receive.
+
+Each core function takes the map of account details as its last argument, and
+it is the job of the closure, returned from `(make-account)`, to insert it as
+the last argument of the supplied function.
+
+For example:
+
+```clj
+;; account-details is a map of account details
+(def merchant (make-account account-details))
+
+;; the merchant closure inserts the map of account details as the last argument
+;; of bills
+(merchant bills)
+
+;; it is equivalent to
+(bills account-details)
+
+;; (merchant bills "ID") is equivalent to (bills "ID" account-details) and so on
 ```
 
 ## Contributing
