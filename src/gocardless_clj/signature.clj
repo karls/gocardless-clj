@@ -11,14 +11,7 @@
        k)))
 
 (extend-protocol gocardless-clj.protocols/PFlattenable
-  clojure.lang.PersistentHashMap
-  (flatten-params [coll ns]
-    (let [pairs (map #(flatten-params %2 (new-ns ns %1)) (keys coll) (vals coll))]
-      (if (empty? pairs)
-        []
-        (apply concat pairs))))
-
-  clojure.lang.PersistentArrayMap
+  clojure.lang.IPersistentMap
   (flatten-params [coll ns]
     (let [pairs (map #(flatten-params %2 (new-ns ns %1)) (keys coll) (vals coll))]
       (if (empty? pairs)
