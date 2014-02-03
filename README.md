@@ -5,11 +5,11 @@ A Clojure library for the GoCardless API.
 ## Status
 
 The library implements most of the functionality for merchants, as
-described in the GoCardless API docs. That means that parter integrations are
-not supported.
+described in the GoCardless API docs. Partner integrations are currently not
+supported.
 
 Although the API is pretty clean and should be fairly easy to use, some nice
-things are currently not in place or are rough around the edges. This also means
+things are not yet in place or are rough around the edges. This also means
 that the API is in a bit of a flux and may change at any time.
 
 * Automatic pagination of results is not supported, which means that you'll have
@@ -30,11 +30,12 @@ All the core functionality is available in *core.clj*.
 (ns user
   (:require [gocardless-clj.core :refer :all]))
 
-(def account-details {:environment :sandbox (or :live)
-	                  :merchant-id "your merchant id"
+;; :environment may be either :sandbox or :live
+(def account-details {:environment :sandbox
+                      :merchant-id "your merchant id"
                       :app-id "your app id"
-         			  :app-secret "your app secret"
-		        	  :access-token "your access token"})
+                      :app-secret "your app secret"
+                      :access-token "your access token"})
 
 ;; make-account returns a function
 (def merchant (make-account account-details))
@@ -49,9 +50,9 @@ All the core functionality is available in *core.clj*.
 (merchant bills "id")
 
 ;; cancel a bill
-(def my-bill (merchant bills "id"))
-(cancelable? my-bill) ;; => true
-(merchant cancel my-bill)
+(let [my-bill (merchant bills "id")]
+  (cancelable? my-bill) ;; => true
+  (merchant cancel my-bill))
 
 ;; get the first page of your subscriptions, 10 per page
 (merchant subscriptions {:per_page 10})
@@ -74,8 +75,8 @@ All the core functionality is available in *core.clj*.
 ;; to confirm the resource, but calling (confirm-resource) and
 ;; passing in the parameters in the request, along with the account
 ;; details.
-(def params (:query-params request))
-(confirm-resource params account)
+(let[params (:query-params request)]
+  (confirm-resource params account))
 ```
 
 ### Internal API notes
