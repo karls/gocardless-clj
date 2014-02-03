@@ -22,6 +22,16 @@ that the API is in a bit of a flux and may change at any time.
 
 See the GoCardless API docs for notes on filtering and pagination.
 
+### Installing
+
+`gocardless-clj` is available on Clojars, at https://clojars.org/gocardless-clj.
+
+Add `gocardless-clj` to your *project.clj*:
+
+```
+[gocardless-clj "0.1.0"]
+```
+
 ## Usage
 
 All the core functionality is available in *core.clj*.
