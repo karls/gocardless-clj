@@ -19,7 +19,7 @@
   [account-details]
   (fn
     ([f] (f account-details))
-    ([f id] (f id account-details))
+    ([f param] (f param account-details))
     ([f k v & kvs]
        (let [args (into {k v} (apply hash-map kvs))]
          (f args account-details)))))
@@ -132,26 +132,53 @@
   ([params account]))
 
 (defn new-bill
+  "Returns the Connect URL for a new Bill.
+
+  Required map keys: `:amount`."
   [{:keys [amount] :as opts} account]
   {:pre [(number? amount)
          (> amount 1.0)]}
-  "new-bill")
+  (let [params (assoc opts :amount (bigdec amount))]
+    (client/new-limit-url "bill" params account)))
 
 (defn new-subscription
-  [{:keys [max-amount interval-length interval-unit] :as opts} account]
-  {:pre [(number? max-amount)
+  "Returns the Connect URL for a new Subscription.
+
+  Required map keys: `:amount`, `:interval-length`, `:interval-unit`."
+  [{:keys [amount interval-length interval-unit] :as opts} account]
+  {:pre [(number? amount)
          (number? interval-length)
          (pos? interval-length)
          (contains? #{"day" "week" "month"} interval-unit)]}
-  "new-subscription")
+  (let [params (assoc opts :amount (bigdec amount))]
+    (client/new-limit-url "subscription" params account)))
 
 (defn new-pre-authorization
+  "Returns the Connect URL for a new PreAuthorization.
+
+  Required keys: `:max-amount`, `:interval-length`, `:interval-unit`."
   [{:keys [max-amount interval-length interval-unit] :as opts} account]
   {:pre [(number? max-amount)
          (number? interval-length)
          (pos? interval-length)
          (contains? #{"day" "week" "month"} interval-unit)]}
-  "new-pre-authorization")
+  (let [params (assoc opts :max-amount (bigdec max-amount))]
+    (client/new-limit-url "pre_authorization" params account)))
 
 (defn confirm-resource
-  [params account])
+  "Confirm a created limit (bill/subscription/preauthorization).
+
+  Signature will be checked and an exception is raised if the signature is
+  invalid.
+
+  `params` is assumed to be a map containing keys and values from the query
+  string. Map keys are assumed to be keywords."
+  [params account]
+  {:pre [(every? (set (keys params))
+                 [:resource_id :resource_type :resource_uri :state :signature])]}
+  (let [ks [:resource_id :resource_type :resource_uri :state :signature]
+        params (select-keys params ks)
+        to-sign (dissoc params :signature)
+        data (select-keys params [:resource_id :resource_type])]
+    (if (= (:signature params) (sign-params to-sign nil))
+      (client/api-post "confirm" account))))
