@@ -1,14 +1,14 @@
 (ns gocardless-clj.t-signature
   (:use midje.sweet)
-  (:require [gocardless-clj.signature :refer :all]
-            [gocardless-clj.protocols :refer [flatten-params]]))
+  (:use gocardless-clj.signature)
+  (:require [gocardless-clj.protocols :refer [flatten-params]]))
 
-(facts "about generating keys"
+(facts "generating namespaced keys"
   (new-ns "some-key") => "some-key[]"
   (new-ns "some-key" "new-key") => "some-key[new-key]")
 
-(facts "about flattening parameters"
-  (flatten-params 10 "ns") => [["ns" "10"]]
+(facts "flattening parameters"
+  (flatten-params (bigdec 10) "ns") => [["ns" "10"]]
   (flatten-params "string" "ns") => [["ns" "string"]]
 
   (let [cars {"cars" ["BMW" "Fiat" "VW"]}
@@ -20,18 +20,19 @@
                                               ["user[cars][]" "BMW"]
                                               ["user[cars][]" "Fiat"]]))
 
-(facts "about normalising key-value pairs"
+(facts "normalising key-value pairs"
   (normalise-keyval ["key" "val"]) => "key=val"
   (normalise-keyval ["key[]" "val"]) => "key%5B%5D=val"
   (normalise-keyval ["key[subkey]" "val"]) => "key%5Bsubkey%5D=val"
   (normalise-keyval ["key[subkey][]" "val"]) => "key%5Bsubkey%5D%5B%5D=val")
 
-(facts "about normalising params"
-  (let [p {"user" {"email" "me@example.com" "age" 30}}]
+(facts "normalising params"
+  (let [p {"user" {"email" "me@example.com" "age" (bigdec 30)}}]
     (normalise-params p) => "user%5Bage%5D=30&user%5Bemail%5D=me%40example.com"))
 
-(facts "about signing params"
+(facts "signing params"
   (let [app-secret "5PUZmVMmukNwiHc7V/TJvFHRQZWZumIpCnfZKrVYGpuAdkCcEfv3LIDSrsJ+xOVH"
-        params {"user" {"email" "fred@example.com" "age" 30}}]
+        params {"user" {"email" "fred@example.com" "age" (bigdec 30)}}]
     ;; example from https://developer.gocardless.com/#signing-the-parameters
-    (sign-params params app-secret) => "763f02cb9f998a5e06fda2b790bedd503ba1a34fd7cbf9e22f8ce562f73f0470"))
+    (sign-params params app-secret)
+    => "763f02cb9f998a5e06fda2b790bedd503ba1a34fd7cbf9e22f8ce562f73f0470"))
