@@ -1,8 +1,12 @@
 (ns gocardless-clj.core
   (:require [gocardless-clj.client :as client]
             [gocardless-clj.resources :refer :all]
-            [gocardless-clj.protocols :refer :all]
             [gocardless-clj.signature :refer [sign-params]]))
+
+(def cancel #'gocardless-clj.protocols/cancel)
+(def cancelable? #'gocardless-clj.protocols/cancelable?)
+(def retry #'gocardless-clj.protocols/retry)
+(def retriable? #'gocardless-clj.protocols/retriable?)
 
 (defn- dispatch-fn
   "The dispatch function for resource functions."
