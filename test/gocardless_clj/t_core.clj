@@ -2,7 +2,8 @@
   (:use midje.sweet)
   (:use gocardless-clj.core)
   (:use clj-http.fake)
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json]
+            [gocardless-clj.resources :refer [map->Bill]]))
 
 ; Dummy account
 (def account {:environment :sandbox
@@ -72,21 +73,21 @@
 (facts "(new-subscription)"
   (def limit new-subscription)
 
-  (limit {:amount "foo" :interval-length 1 :interval-unit "day"} account)
+  (limit {:amount "foo" :interval_length 1 :interval_unit "day"} account)
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval-length 1} account)
+  (limit {:amount 10.0 :interval_length 1} account)
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval-length -9 :interval-unit "day"} account)
+  (limit {:amount 10.0 :interval_length -9 :interval_unit "day"} account)
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval-length 3 :interval-unit "year"} account)
+  (limit {:amount 10.0 :interval_length 3 :interval_unit "year"} account)
   => (throws AssertionError)
 
   (let [valid-params {:amount 10.0
-                      :interval-length 3
-                      :interval-unit "month"}]
+                      :interval_length 3
+                      :interval_unit "month"}]
     (limit valid-params account) => #"https://sandbox.gocardless.com"
     (limit valid-params account) => #"connect/subscriptions/new"
     (limit valid-params account) => #"signature="
@@ -99,21 +100,21 @@
 (facts "(new-pre-authorization)"
   (def limit new-pre-authorization)
 
-  (limit {:max-amount "foo" :interval-length 1 :interval-unit "day"} account)
+  (limit {:max_amount "foo" :interval_length 1 :interval_unit "day"} account)
   => (throws AssertionError)
 
-  (limit {:max-amount 10.0 :interval-length 1} account)
+  (limit {:max_amount 10.0 :interval_length 1} account)
   => (throws AssertionError)
 
-  (limit {:max-amount 10.0 :interval-length -9 :interval-unit "day"} account)
+  (limit {:max_amount 10.0 :interval_length -9 :interval_unit "day"} account)
   => (throws AssertionError)
 
-  (limit {:max-amount 10.0 :interval-length 3 :interval-unit "year"} account)
+  (limit {:max_amount 10.0 :interval_length 3 :interval_unit "year"} account)
   => (throws AssertionError)
 
-  (let [valid-params {:max-amount 10.0
-                      :interval-length 3
-                      :interval-unit "month"}]
+  (let [valid-params {:max_amount 10.0
+                      :interval_length 3
+                      :interval_unit "month"}]
     (limit valid-params account) => #"https://sandbox.gocardless.com"
     (limit valid-params account) => #"connect/pre_authorizations/new"
     (limit valid-params account) => #"signature="
@@ -142,3 +143,13 @@
       ;; was removed or changed
       (confirm-resource (dissoc params :state) account) => false
       (confirm-resource (assoc params :state "bar") account) => false)))
+
+(with-fake-routes-in-isolation
+  {
+   "https://sandbox.gocardless.com/api/v1/bills"
+   {:post (fn [request] {:status 201
+                         :headers {"Content-Type" "application/json"}
+                         :body (json/generate-string {:id "BILLID"})})}}
+  (facts "(create-bill)"
+    (create-bill {:amount 10.0 :pre_authorization_id "PREAUTH1"} account)
+    => (map->Bill {:id "BILLID"})))

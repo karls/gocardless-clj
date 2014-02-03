@@ -20,7 +20,7 @@
   [account-details]
   (fn
     ([f] (f account-details))
-    ([f param] (f param account-details))
+    ([f arg] (f arg account-details))
     ([f k v & kvs]
        (let [args (into {k v} (apply hash-map kvs))]
          (f args account-details)))))
@@ -152,28 +152,38 @@
   (let [params (assoc opts :amount (bigdec amount))]
     (client/new-limit-url "bill" params account)))
 
+(defn create-bill
+  [{:keys [amount pre_authorization_id] :as opts} account]
+  {:pre [(number? amount)
+         (> amount 1.0)
+         (string? pre_authorization_id)
+         (not (empty? pre_authorization_id))]}
+  (let [params (assoc opts :amount (bigdec amount))]
+    (-> (client/api-post "bills" {"bill" params} account)
+        map->Bill)))
+
 (defn new-subscription
   "Returns the Connect URL for a new Subscription.
 
-  Required map keys: `:amount`, `:interval-length`, `:interval-unit`."
-  [{:keys [amount interval-length interval-unit] :as opts} account]
+  Required map keys: `:amount`, `:interval_length`, `:interval_unit`."
+  [{:keys [amount interval_length interval_unit] :as opts} account]
   {:pre [(number? amount)
-         (number? interval-length)
-         (pos? interval-length)
-         (contains? #{"day" "week" "month"} interval-unit)]}
+         (number? interval_length)
+         (pos? interval_length)
+         (contains? #{"day" "week" "month"} interval_unit)]}
   (let [params (assoc opts :amount (bigdec amount))]
     (client/new-limit-url "subscription" params account)))
 
 (defn new-pre-authorization
   "Returns the Connect URL for a new PreAuthorization.
 
-  Required keys: `:max-amount`, `:interval-length`, `:interval-unit`."
-  [{:keys [max-amount interval-length interval-unit] :as opts} account]
-  {:pre [(number? max-amount)
-         (number? interval-length)
-         (pos? interval-length)
-         (contains? #{"day" "week" "month"} interval-unit)]}
-  (let [params (assoc opts :max-amount (bigdec max-amount))]
+  Required keys: `:max_amount`, `:interval_length`, `:interval_unit`."
+  [{:keys [max_amount interval_length interval_unit] :as opts} account]
+  {:pre [(number? max_amount)
+         (number? interval_length)
+         (pos? interval_length)
+         (contains? #{"day" "week" "month"} interval_unit)]}
+  (let [params (assoc opts :max_amount (bigdec max_amount))]
     (client/new-limit-url "pre_authorization" params account)))
 
 (defn confirm-resource
