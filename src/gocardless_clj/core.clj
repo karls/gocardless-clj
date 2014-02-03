@@ -1,7 +1,8 @@
 (ns gocardless-clj.core
   (:require [gocardless-clj.client :as client]
             [gocardless-clj.resources :refer :all]
-            [gocardless-clj.protocols :refer :all]))
+            [gocardless-clj.protocols :refer :all]
+            [gocardless-clj.signature :refer [sign-params]]))
 
 (defn- dispatch-fn
   "The dispatch function for resource functions."
