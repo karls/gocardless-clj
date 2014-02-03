@@ -7,11 +7,16 @@
 (def account {:environment :sandbox
               :access-token "TOKEN"})
 
-(fact "user-agent string looks at the project version"
+(fact "(user-agent) string looks at the project version"
   (let [version (System/getProperty "gocardless-clj.version")]
-    (ua-string) => (str "gocardless-clj/v" version)))
+    (#'gocardless-clj.client/ua-string) => (str "gocardless-clj/v" version)))
 
-(fact "path constructs `/`-joined string"
+(fact "(underscorize-keys) recursively replaces dashes in keys with underscores"
+  (let [m {"key-1" "val-1" "key-2" {"key-3" "val3"}}]
+    (#'gocardless-clj.client/underscorize-keys m)
+    => {"key_1" "val-1" "key_2" {"key_3" "val3"}}))
+
+(fact "(path) constructs `/`-joined string"
   (path "foo" "bar" "baz") => "foo/bar/baz")
 
 (facts "about api-url"
