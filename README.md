@@ -4,13 +4,13 @@ A Clojure library for the GoCardless API.
 
 ## Status
 
-The library currently implements most of the functionality for merchants, as
+The library implements most of the functionality for merchants, as
 described in the GoCardless API docs. That means that parter integrations are
 not supported.
 
 Although the API is pretty clean and should be fairly easy to use, some nice
 things are currently not in place or are rough around the edges. This also means
-that the API is in flux and may change at any time.
+that the API is in a bit of a flux and may change at any time.
 
 * Automatic pagination of results is not supported, which means that you'll have
   to paginate manually.
@@ -62,9 +62,9 @@ All the core functionality is available in *core.clj*.
 ;; create a new bill, but pass in more information
 (merchant new-bill {:amount 10.0
 	                :name "My first bill"
-					:user {:email "customer.email@example.com
-						   :first\_name "Joe"
-						   :last\_name "Bloggs"}})
+					:user {:email "customer.email@example.com"
+						   :first_name "Joe"
+						   :last_name "Bloggs"}})
 
 ;; When a customer has gone through they will be redirected to
 ;; a URL specified by Redirect URI in your Dashboard (can be
