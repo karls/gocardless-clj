@@ -14,7 +14,7 @@
   clojure.lang.PersistentHashMap
   (flatten-params [coll ns]
     (let [pairs (map #(flatten-params %2 (new-ns ns %1)) (keys coll) (vals coll))]
-      (if (empty pairs)
+      (if (empty? pairs)
         []
         (apply concat pairs))))
 
