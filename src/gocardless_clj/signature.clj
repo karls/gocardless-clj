@@ -38,6 +38,10 @@
 
   java.lang.Long
   (flatten-params [number ns]
+    [[ns (str number)]])
+
+  java.math.BigDecimal
+  (flatten-params [number ns]
     [[ns (str number)]]))
 
 (defn percent-encode
