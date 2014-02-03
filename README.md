@@ -29,7 +29,7 @@ See the GoCardless API docs for notes on filtering and pagination.
 Add `gocardless-clj` to your *project.clj*:
 
 ```
-[gocardless-clj "0.1.0"]
+[gocardless-clj "0.2.0"]
 ```
 
 ## Usage
