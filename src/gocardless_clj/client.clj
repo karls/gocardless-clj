@@ -75,23 +75,34 @@
 (defn do-request
   "Worker function for `api-get`, `api-post` and `api-put`."
   [method url headers params]
-  (-> (client/request {:method method
-                       :url url
-                       :headers headers
-                       :as :json})
+  (-> (client/request (conj params {:method method
+                                    :url url
+                                    :headers headers
+                                    :as :json}))
       :body))
 
 (defn api-get
   "Do a GET request to the API."
-  [uri account]
-  (do-request :get (api-url uri account) (construct-headers account) {}))
+  [uri params account]
+  (do-request :get
+              (api-url uri account)
+              (construct-headers account)
+              {:query-params params}))
 
 (defn api-post
   "Do a POST request to the API."
-  [uri account]
-  (do-request :post (api-url uri account) (construct-headers account) {}))
+  [uri params account]
+  (do-request :post
+              (api-url uri account)
+              (construct-headers account)
+              {:form-params params
+               :content-type :json}))
 
 (defn api-put
   "Do a PUT request to the API."
-  [uri account]
-  (do-request :put (api-url uri account) (construct-headers account) {}))
+  [uri params account]
+  (do-request :put
+              (api-url uri account)
+              (construct-headers account)
+              {:form-params params
+               :content-type :json}))

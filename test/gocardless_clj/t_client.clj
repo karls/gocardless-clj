@@ -42,10 +42,10 @@
    }
 
   (facts "about api-get"
-    (api-get "bills/BILL1" account) => {:id "BILL1"})
+    (api-get "bills/BILL1" {} account) => {:id "BILL1"})
 
   (facts "about api-post"
-    (api-post "bills/BILL1/retry" account) => {:id "BILL1"})
+    (api-post "bills/BILL1/retry" {} account) => {:id "BILL1"})
 
   (facts "about api-put"
-    (api-put "subscriptions/SUBS1/cancel" account) => {:id "SUBS1"}))
+    (api-put "subscriptions/SUBS1/cancel" {} account) => {:id "SUBS1"}))
