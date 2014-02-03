@@ -54,7 +54,7 @@
                     :body (json/generate-string [{:id "C1"} {:id "C2"}])})}
     (customers account) => [{:id "C1"} {:id "C2"}]
     (customers "C1" account) => {:id "C1"}
-    (customers {:key "val"} account) => "Params"))
+    (customers {:per_page 10} account) => [{:id "C1"} {:id "C2"}]))
 
 (facts "(new-bill)"
   (def limit new-bill)
@@ -122,3 +122,23 @@
     (limit valid-params account) => #"nonce="
     (limit valid-params account) => #"pre_authorization%5Bmax_amount%5D=10.0"
     (limit valid-params account) => #"pre_authorization%5Bmerchant_id%5D=MERCHANT1"))
+
+(with-fake-routes-in-isolation
+  {
+   "https://sandbox.gocardless.com/api/v1/confirm"
+   {:post (fn [request] {:status 200
+                         :headers {"Content-Type" "application/json"}
+                         :body (json/generate-string {:some "data"})})}}
+
+
+  (let [params {:resource_id "BILLID"
+                :resource_type "bill"
+                :resource_uri "https://some.uri.com/bills/BILLID"
+                :signature "977aab1a7949b00c2dfab0f7816a113d020d9bcdb9c788d67c673b1ec14681b9"
+                :state "foo"}]
+    (facts "(confirm-resource)"
+      (confirm-resource params account) => {:some "data"}
+      ;; if the request was tampered with and for example the state param
+      ;; was removed or changed
+      (confirm-resource (dissoc params :state) account) => false
+      (confirm-resource (assoc params :state "bar") account) => false)))

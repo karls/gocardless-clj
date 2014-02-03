@@ -29,7 +29,7 @@
   "Get the account details."
   [account]
   (-> (client/path "merchants" (:merchant-id account))
-      (client/api-get account)))
+      (client/api-get {} account)))
 
 (defmulti customers
   "Retrieve merchant's customers or a single customer.
@@ -42,13 +42,15 @@
 (defmethod customers
   java.lang.String
   [id account]
-     (client/api-get (client/path "users" id) account))
+     (client/api-get (client/path "users" id) {} account))
 (defmethod customers
   clojure.lang.IPersistentMap
   ([account]
      (-> (client/path "merchants" (:merchant-id account) "users")
-         (client/api-get account)))
-  ([params account] "Params"))
+         (client/api-get {} account)))
+  ([params account]
+     (-> (client/path "merchants" (:merchant-id account) "users")
+         (client/api-get params account))))
 
 (defmulti payouts
   "Retrieve merchant's payouts or a single payout.
@@ -61,13 +63,15 @@
 (defmethod payouts
   java.lang.String
   [id account]
-  (client/api-get account (client/path "payouts" id)))
+  (client/api-get (client/path "payouts" id) {} account))
 (defmethod payouts
   clojure.lang.IPersistentMap
   ([account]
      (-> (client/path "merchants" (:merchant-id account) "payouts")
-         (client/api-get account)))
-  ([params account] "Params"))
+         (client/api-get {} account)))
+  ([params account]
+     (-> (client/path "merchants" (:merchant-id account) "payouts")
+         (client/api-get params account))))
 
 (defmulti bills
   "Retrieve merchant's bills or a single bill.
@@ -80,15 +84,17 @@
 (defmethod bills
   java.lang.String
   [id account]
-  (-> (client/api-get account (client/path "bills" id))
+  (-> (client/api-get (client/path "bills" id) {} account)
       map->Bill))
 (defmethod bills
   clojure.lang.IPersistentMap
   ([account]
      (let [bills (-> (client/path "merchants" (:merchant-id account) "bills")
-                     (client/api-get account))]
+                     (client/api-get {} account))]
        (map map->Bill bills)))
-  ([params account] "Params"))
+  ([params account]
+     (-> (client/path "merchants" (:merchant-id account) "bills")
+         (client/api-get params account))))
 
 (defmulti subscriptions
   "Retrieve merchant's subscriptions or a single subscription.
@@ -101,15 +107,17 @@
 (defmethod subscriptions
   java.lang.String
   [account id]
-  (-> (client/api-get account (client/path "subscriptions" id))
+  (-> (client/api-get (client/path "subscriptions" id) {} account)
       (map->Subscription)))
 (defmethod subscriptions
   clojure.lang.IPersistentMap
   ([account]
      (let [subscriptions  (-> (client/path "merchants" (:merchant-id account) "subscriptions")
-                              (client/api-get account))]
+                              (client/api-get {} account))]
        (map map->Subscription subscriptions)))
-  ([params account] "Params"))
+  ([params account]
+     (-> (client/path "merchants" (:merchant-id account) "subscriptions")
+         (client/api-get params account))))
 
 (defmulti pre-authorizations
   "Retrieve merchant's pre-authorizations or a single pre-authorization.
@@ -122,15 +130,17 @@
 (defmethod pre-authorizations
   java.lang.String
   [account id]
-  (-> (client/api-get account (client/path "pre_authorizations" id))
+  (-> (client/api-get (client/path "pre_authorizations" id) {} account)
       map->PreAuthorization))
 (defmethod pre-authorizations
   clojure.lang.IPersistentMap
   ([account]
-     (let [pre-auths (-> (client/path "merchants" (:merchant-id account) "pre_authorizations")
-                         (client/api-get account))]
-       (map map->PreAuthorization pre-auths)))
-  ([params account]))
+     (let [preauths (-> (client/path "merchants" (:merchant-id account) {} "pre_authorizations")
+                        (client/api-get account))]
+       (map map->PreAuthorization preauths)))
+  ([params account]
+     (-> (client/path "merchants" (:merchant-id account) "pre_authorizations")
+         (client/api-get params account))))
 
 (defn new-bill
   "Returns the Connect URL for a new Bill.
@@ -169,17 +179,18 @@
 (defn confirm-resource
   "Confirm a created limit (bill/subscription/preauthorization).
 
-  Signature will be checked and an exception is raised if the signature is
-  invalid.
+  Signature will be checked. If signatures don't match, the resource will not be
+  confirmed and `false` is returned.
 
   `params` is assumed to be a map containing keys and values from the query
   string. Map keys are assumed to be keywords."
   [params account]
   {:pre [(every? (set (keys params))
-                 [:resource_id :resource_type :resource_uri :state :signature])]}
+                 [:resource_id :resource_type :resource_uri :signature])]}
   (let [ks [:resource_id :resource_type :resource_uri :state :signature]
         params (select-keys params ks)
-        to-sign (dissoc params :signature)
+        to-sign (clojure.walk/stringify-keys (dissoc params :signature))
         data (select-keys params [:resource_id :resource_type])]
-    (if (= (:signature params) (sign-params to-sign nil))
-      (client/api-post "confirm" account))))
+    (if (= (:signature params) (sign-params to-sign (:app-secret account)))
+      (client/api-post "confirm" data account)
+      false)))
