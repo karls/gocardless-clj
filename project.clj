@@ -3,9 +3,9 @@
   :url "https://github.com/karls/gocardless-clj"
   :license {:name "MIT License"
             :url "http://choosealicense.com/licenses/mit/"}
-  :dev-dependencies [[midje "1.6.0"  :exclusions [org.clojure/clojure]]
-                     [lein-midje "3.0.0"]
-                     [clj-http-fake "0.7.8"]]
+  :profiles {:dev {:dependencies [[midje "1.6.0" :exclusions [org.clojure/clojure]]
+                                  [clj-http-fake "0.7.8"]]
+                   :plugins [[lein-midje "3.1.3"]]}}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [pandect "0.3.0"]
                  [clj-http "0.7.8"]
