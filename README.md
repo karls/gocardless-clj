@@ -133,6 +133,9 @@ If you're interested in using this for a parter integration or need
 more/better functionality, feel free to get in touch via Github issues,
 or submit a patch.
 
+Bugs may be reported via Github issues or fork the repo, write some tests, fix
+the bug and submit a pull request.
+
 ## License
 
 Copyright © 2014 Karl Sutt
