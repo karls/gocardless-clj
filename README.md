@@ -1,6 +1,9 @@
 # gocardless-clj
 
-A Clojure library for the GoCardless API.
+A Clojure library for talking to the [GoCardless](https://gocardless.com) API.
+
+GoCardless is an online payments provider, leveraging the direct debit network
+in the UK (BACS) and European Union (SEPA) for low-cost bank-to-bank payments.
 
 ## Status
 
