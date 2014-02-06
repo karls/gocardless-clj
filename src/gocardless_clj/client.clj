@@ -16,13 +16,6 @@
   (let [f (fn [[k v]] [(clojure.string/replace k "-" "_") v])]
     (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
-(defn construct-headers
-  "Construct the headers necessary for talking to the API."
-  [account]
-  {"Authorization" (format "Bearer %s" (:access-token account))
-   "Accept" "application/json"
-   "User-Agent" (ua-string)})
-
 (defn path
   "Join parts with `/`."
   [& parts]
@@ -74,35 +67,40 @@
 
 (defn do-request
   "Worker function for `api-get`, `api-post` and `api-put`."
-  [method url headers params]
-  (-> (client/request (conj params {:method method
+  [method url params]
+  (let [headers {"Accept" "application/json"
+                 "User-Agent" (ua-string)}
+        final-params (merge params {:method method
                                     :url url
                                     :headers headers
-                                    :as :json}))
-      :body))
+                                    :as :json})]
+    (:body (client/request final-params))))
 
 (defn api-get
   "Do a GET request to the API."
-  [uri params account]
-  (do-request :get
-              (api-url uri account)
-              (construct-headers account)
-              {:query-params params}))
+  ([uri params account]
+     (api-get uri params {:oauth-token (:access-token account)} account))
+  ([uri params auth-params account]
+     (do-request :get
+                 (api-url uri account)
+                 (merge auth-params {:query-params params}))))
 
 (defn api-post
   "Do a POST request to the API."
-  [uri params account]
-  (do-request :post
-              (api-url uri account)
-              (construct-headers account)
-              {:form-params params
-               :content-type :json}))
+  ([uri params account]
+     (api-post uri params {:oauth-token (:access-token account)} account))
+  ([uri params auth-params account]
+     (do-request :post
+                 (api-url uri account)
+                 (merge auth-params {:form-params params
+                                    :content-type :json}))))
 
 (defn api-put
   "Do a PUT request to the API."
-  [uri params account]
-  (do-request :put
-              (api-url uri account)
-              (construct-headers account)
-              {:form-params params
-               :content-type :json}))
+  ([uri params account]
+     (api-put uri params {:oauth-token (:access-token account)} account))
+  ([uri params auth-params account]
+     (do-request :put
+                 (api-url uri account)
+                 (merge auth-params {:form-params params
+                                    :content-type :json}))))
