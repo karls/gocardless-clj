@@ -36,6 +36,10 @@
   (flatten-params [string ns]
     [[ns string]])
 
+  clojure.lang.Keyword
+  (flatten-params [kw ns]
+    [[ns (name kw)]])
+
   java.lang.Long
   (flatten-params [number ns]
     [[ns (str number)]])
@@ -47,7 +51,7 @@
 (defn percent-encode
   "Percent-encode a string."
   [s]
-  (URLEncoder/encode s "UTF-8"))
+  (URLEncoder/encode (name s) "UTF-8"))
 
 (defn normalise-keyval
   "Normalises a key-value pair.
