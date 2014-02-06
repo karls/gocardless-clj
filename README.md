@@ -82,11 +82,10 @@ All the core functionality is available in *core.clj*.
 ;; over-ridden in the params hash when creating a new bill,
 ;; subscription or pre-authorization).
 ;; Once the customer is redirected back to your site, you'll need
-;; to confirm the resource, but calling (confirm-resource) and
-;; passing in the parameters in the request, along with the account
-;; details.
+;; to confirm the resource by calling (confirm-resource) and
+;; passing in the parameters in the request.
 (let [params (:query-params request)]
-  (confirm-resource params account))
+  (merchant confirm-resource params))
 ```
 
 ### Example app
