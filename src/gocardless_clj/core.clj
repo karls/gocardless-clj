@@ -197,14 +197,16 @@
   confirmed and `false` is returned.
 
   `params` is assumed to be a map containing keys and values from the query
-  string. Map keys are assumed to be keywords."
+  string. Map keys are assumed to be strings."
   [params account]
   {:pre [(every? (set (keys params))
-                 [:resource_id :resource_type :resource_uri :signature])]}
+                 ["resource_id" "resource_type" "resource_uri" "signature"])]}
   (let [ks [:resource_id :resource_type :resource_uri :state :signature]
+        params (clojure.walk/keywordize-keys params)
         params (select-keys params ks)
-        to-sign (clojure.walk/stringify-keys (dissoc params :signature))
+        to-sign (dissoc params :signature)
         data (select-keys params [:resource_id :resource_type])]
     (if (= (:signature params) (sign-params to-sign (:app-secret account)))
-      (client/api-post "confirm" data account)
+      (client/api-post "confirm" data {:basic-auth [(:app-id account)
+                                                    (:app-secret account)]} account)
       false)))

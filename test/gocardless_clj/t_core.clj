@@ -132,17 +132,17 @@
                          :body (json/generate-string {:some "data"})})}}
 
 
-  (let [params {:resource_id "BILLID"
-                :resource_type "bill"
-                :resource_uri "https://some.uri.com/bills/BILLID"
-                :signature "977aab1a7949b00c2dfab0f7816a113d020d9bcdb9c788d67c673b1ec14681b9"
-                :state "foo"}]
+  (let [params {"resource_id" "BILLID"
+                "resource_type" "bill"
+                "resource_uri" "https://some.uri.com/bills/BILLID"
+                "signature" "977aab1a7949b00c2dfab0f7816a113d020d9bcdb9c788d67c673b1ec14681b9"
+                "state" "foo"}]
     (facts "(confirm-resource)"
       (confirm-resource params account) => {:some "data"}
       ;; if the request was tampered with and for example the state param
       ;; was removed or changed
-      (confirm-resource (dissoc params :state) account) => false
-      (confirm-resource (assoc params :state "bar") account) => false)))
+      (confirm-resource (dissoc params "state") account) => false
+      (confirm-resource (assoc params "state" "bar") account) => false)))
 
 (with-fake-routes-in-isolation
   {
