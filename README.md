@@ -102,12 +102,12 @@ $ git clone https://github.com/karls/gocardless-clj
 
 and change in your details in the `account-details` map, save the file
 and run `lein ring server-headless` on the command-line. That should boot
-a Jetty server and if you go to http://localhost:3000 and you'll see further
+a Jetty server and if you go to `http://localhost:3000` and you'll see further
 instructions.
 
 That is all good, but unfortunately there is no way to confirm a resource once
 you've gone through the GoCardless' Connect flow, as GoCardless cannot redirect
-the customer to http://localhost:3000/confirm. Fortunately, there is a way to
+the customer to `http://localhost:3000/confirm`. Fortunately, there is a way to
 fix it by using a handy tool such as
 [localtunnel](https://github.com/defunctzombie/localtunnel) or
 [ngrok](https://ngrok.com/).
