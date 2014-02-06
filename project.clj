@@ -5,7 +5,8 @@
             :url "http://choosealicense.com/licenses/mit/"}
   :profiles {:dev {:dependencies [[midje "1.6.0" :exclusions [org.clojure/clojure]]
                                   [clj-http-fake "0.7.8"]
-                                  [compojure "1.1.6"]]
+                                  [compojure "1.1.6"]
+                                  [javax.servlet/servlet-api "2.5"]]
                    :plugins [[lein-midje "3.1.3"]
                              [lein-ring "0.8.10"]]
                    :source-paths ["src" "example"]
