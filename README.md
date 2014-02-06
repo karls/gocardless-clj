@@ -85,11 +85,53 @@ All the core functionality is available in *core.clj*.
 ;; to confirm the resource, but calling (confirm-resource) and
 ;; passing in the parameters in the request, along with the account
 ;; details.
-(let[params (:query-params request)]
+(let [params (:query-params request)]
   (confirm-resource params account))
 ```
 
-### Internal API notes
+### Example app
+
+There is an example application located in `example/example_app.clj` which is a
+simple [Compojure](https://github.com/weavejester/compojure/) web-app.
+
+You should clone this repository
+
+```sh
+$ git clone https://github.com/karls/gocardless-clj
+```
+
+and change in your details in the `account-details` map, save the file
+and run `lein ring server-headless` on the command-line. That should boot
+a Jetty server and if you go to http://localhost:3000 and you'll see further
+instructions.
+
+That is all good, but unfortunately there is no way to confirm a resource once
+you've gone through the GoCardless' Connect flow, as GoCardless cannot redirect
+the customer to http://localhost:3000/confirm. Fortunately, there is a way to
+fix it by using a handy tool such as
+[localtunnel](https://github.com/defunctzombie/localtunnel) or
+[ngrok](https://ngrok.com/).
+
+I prefer ngrok, so, in a different terminal window, run `ngrok 3000`. It should
+give back a couple of URLs:
+
+![ngrok output](http://i.imgur.com/liuqXmg.png)
+
+Since the URL for confirming a resource is set to `http://localhost:3000/confirm`,
+as per the example application, you'll need to set the Redirect URL to
+something that looks like http://6b2806c0.ngrok.com/confirm.
+
+Copy the forwarded URL (the one that looks like http://6b2806c0.ngrok.com)
+as the Redirect URL in your GoCardless Developer settings and append
+`/confirm`. The customer will be effectively redirected to
+http://6b2806c0.ngrok.com/confirm, which matches the confirm URL in the example
+app.
+
+Now, when you navigate to, say, http://6b2806c0.ngrok.com/example-bill
+and go through the GoCardless' Connect flow, the resource should be confirmed
+and the response should be something like `{:success true}`.
+
+## Internal API notes
 
 In order to provide a nice and consitent API externally, some compromises
 had to be made internally in terms of clarity of the code.
