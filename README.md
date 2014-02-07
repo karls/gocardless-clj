@@ -19,7 +19,7 @@ that the API is in a bit of a flux and may change at any time.
 
 * Automatic pagination of results is not supported, which means that you'll have
   to paginate manually.
-* Filtering **should** work out of the box, as passing query string params
+* Filtering **should** work out of the box, as passing query string parameters
   is supported.
 * Handling webhooks are currently not supported.
 * Pre-populating fields for Connect flow pages is supported and should work out
@@ -133,7 +133,7 @@ and the response should be something like `{:success true}`.
 
 ## Internal API notes
 
-In order to provide a nice and consitent API externally, some compromises
+In order to provide a nice and consistent API externally, some compromises
 had to be made internally in terms of clarity of the code.
 
 The first function that's worth investigating it `(make-account)` located in
@@ -174,7 +174,7 @@ For example:
 
 Contributions are welcome!
 
-If you're interested in using this for a parter integration or need
+If you're interested in using this for a partner integration or need
 more/better functionality, feel free to get in touch via Github issues,
 or submit a patch.
 
