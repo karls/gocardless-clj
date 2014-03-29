@@ -20,11 +20,11 @@
   (path "foo" "bar" "baz") => "foo/bar/baz")
 
 (facts "about api-url"
-  (api-url "http://google.com" account) => "http://google.com"
-  (api-url "https://google.com" account) => "https://google.com"
-  (api-url "bills/BILL1" {:environment :live}) => "https://gocardless.com/api/v1/bills/BILL1"
-  (api-url "bills/BILL1" account) => "https://sandbox.gocardless.com/api/v1/bills/BILL1"
-  (api-url "bills/BILL1" {:environment :foo}) => (throws IllegalArgumentException))
+  (api-url account "http://google.com") => "http://google.com"
+  (api-url account "https://google.com") => "https://google.com"
+  (api-url {:environment :live} "bills/BILL1") => "https://gocardless.com/api/v1/bills/BILL1"
+  (api-url account "bills/BILL1") => "https://sandbox.gocardless.com/api/v1/bills/BILL1"
+  (api-url {:environment :foo} "bills/BILL1") => (throws IllegalArgumentException))
 
 (with-fake-routes-in-isolation
   {"https://sandbox.gocardless.com/api/v1/bills/BILL1"
@@ -42,10 +42,10 @@
    }
 
   (facts "(api-get)"
-    (api-get "bills/BILL1" {} account) => {:id "BILL1"})
+    (api-get account "bills/BILL1" {}) => {:id "BILL1"})
 
   (facts "(api-post)"
-    (api-post "bills/BILL1/retry" {} account) => {:id "BILL1"})
+    (api-post account "bills/BILL1/retry" {}) => {:id "BILL1"})
 
   (facts "(api-put)"
-    (api-put "subscriptions/SUBS1/cancel" {} account) => {:id "SUBS1"}))
+    (api-put account "subscriptions/SUBS1/cancel" {}) => {:id "SUBS1"}))

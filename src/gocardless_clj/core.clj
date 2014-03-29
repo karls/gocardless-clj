@@ -1,5 +1,5 @@
 (ns gocardless-clj.core
-  (:require [gocardless-clj.client :as client]
+  (:require [gocardless-clj.client :as c]
             [gocardless-clj.resources :refer :all]
             [gocardless-clj.signature :refer [sign-params]]))
 
@@ -8,187 +8,120 @@
 (def retry #'gocardless-clj.protocols/retry)
 (def retriable? #'gocardless-clj.protocols/retriable?)
 
-(defn- dispatch-fn
-  "The dispatch function for resource functions."
-  [arg & _]
-  (class arg))
-
-(defn make-account
-  "Create an `account` function based on account details.
-
-  Returns a function that closes over account details and takes either a
-  function, a function and an ID or a function and some key-value pairs.
-
-  The argument function can be any of the supported resource-functions:
-  customers, payouts, bills, subscriptions or pre-authorizations."
-  [account-details]
-  (fn
-    ([f] (f account-details))
-    ([f arg] (f arg account-details))
-    ([f k v & kvs]
-       (let [args (into {k v} (apply hash-map kvs))]
-         (f args account-details)))))
+(defn- only-id?
+  [opts-list]
+  (= (count opts-list) 1))
 
 (defn details
   "Get the account details."
   [account]
-  (-> (client/path "merchants" (:merchant-id account))
-      (client/api-get {} account)))
+  (c/api-get account (c/path "merchants" (:merchant-id account)) {}))
 
-(defmulti customers
+(defn customers
   "Retrieve merchant's customers or a single customer.
 
-  Takes as arguments either the account-map, an ID of a customer and the
-  account-map, or a params-map and the account-map.
+  Takes as arguments either the account-map and an ID of a customer, or the
+  account-map and params."
+  [account & opts]
+  (if (only-id? opts)
+    (c/api-get account (c/path "users" (first opts)) {})
+    (c/api-get account
+               (c/path "merchants" (:merchant-id account) "users")
+               (apply hash-map opts))))
 
-  This is normally passed into the function returned from `make-account`."
-  dispatch-fn)
-(defmethod customers
-  java.lang.String
-  [id account]
-     (client/api-get (client/path "users" id) {} account))
-(defmethod customers
-  clojure.lang.IPersistentMap
-  ([account]
-     (-> (client/path "merchants" (:merchant-id account) "users")
-         (client/api-get {} account)))
-  ([params account]
-     (-> (client/path "merchants" (:merchant-id account) "users")
-         (client/api-get params account))))
-
-(defmulti payouts
+(defn payouts
   "Retrieve merchant's payouts or a single payout.
 
-  Takes as arguments either the account-map, an ID of a payout and the
-  account-map, or a params-map and the account-map.
+  Takes as arguments either the account-map and an ID of a payout, or the
+  account-map and params."
+  [account & opts]
+  (if (only-id? opts)
+    (c/api-get account (c/path "payouts" (first opts)) {})
+    (c/api-get account
+               (c/path "merchants" (:merchant-id account) "payouts")
+               (apply hash-map opts))))
 
-  This is normally passed into the function returned from `make-account`."
-  dispatch-fn)
-(defmethod payouts
-  java.lang.String
-  [id account]
-  (client/api-get (client/path "payouts" id) {} account))
-(defmethod payouts
-  clojure.lang.IPersistentMap
-  ([account]
-     (-> (client/path "merchants" (:merchant-id account) "payouts")
-         (client/api-get {} account)))
-  ([params account]
-     (-> (client/path "merchants" (:merchant-id account) "payouts")
-         (client/api-get params account))))
-
-(defmulti bills
+(defn bills
   "Retrieve merchant's bills or a single bill.
 
-  Takes as arguments either the account-map, an ID of a bill and the
-  account-map, or a params-map and the account-map.
+  Takes as arguments either the account-map and an ID of a bill, or the
+  account-map and params."
+  [account & opts]
+  (if (only-id? opts)
+    (-> (c/api-get account (c/path "bills" (first opts)) {}) map->Bill)
+    (let [path (c/path "merchants" (:merchant-id account) "bills")
+          bills (c/api-get account path (apply hash-map opts))]
+      (map map->Bill bills))))
 
-  This is normally passed into the function returned from `make-account`."
-  dispatch-fn)
-(defmethod bills
-  java.lang.String
-  [id account]
-  (-> (client/api-get (client/path "bills" id) {} account)
-      map->Bill))
-(defmethod bills
-  clojure.lang.IPersistentMap
-  ([account]
-     (let [bills (-> (client/path "merchants" (:merchant-id account) "bills")
-                     (client/api-get {} account))]
-       (map map->Bill bills)))
-  ([params account]
-     (-> (client/path "merchants" (:merchant-id account) "bills")
-         (client/api-get params account))))
-
-(defmulti subscriptions
+(defn subscriptions
   "Retrieve merchant's subscriptions or a single subscription.
 
-  Takes as arguments either the account-map, an ID of a subscription and the
-  account-map, or a params-map and the account-map.
+  Takes as arguments either the account-map and an ID of a subscription, or the
+  account-map and params."
+  [account & opts]
+  (if (only-id? opts)
+    (-> (c/api-get account (c/path "subscriptions" (first opts)) {})
+        (map->Subscription))
+    (let [path (c/path "merchants" (:merchant-id account) "subscriptions")
+          subs (c/api-get account path (apply hash-map opts))]
+      (map map->Subscription subs))))
 
-  This is normally passed into the function returned from `make-account`."
-  dispatch-fn)
-(defmethod subscriptions
-  java.lang.String
-  [account id]
-  (-> (client/api-get (client/path "subscriptions" id) {} account)
-      (map->Subscription)))
-(defmethod subscriptions
-  clojure.lang.IPersistentMap
-  ([account]
-     (let [subscriptions  (-> (client/path "merchants" (:merchant-id account) "subscriptions")
-                              (client/api-get {} account))]
-       (map map->Subscription subscriptions)))
-  ([params account]
-     (-> (client/path "merchants" (:merchant-id account) "subscriptions")
-         (client/api-get params account))))
-
-(defmulti pre-authorizations
+(defn pre-authorizations
   "Retrieve merchant's pre-authorizations or a single pre-authorization.
 
-  Takes as arguments either the account-map, an ID of a pre-authorization and the
-  account-map, or a params-map and the account-map.
-
-  This is normally passed into the function returned from `make-account`."
-  dispatch-fn)
-(defmethod pre-authorizations
-  java.lang.String
-  [account id]
-  (-> (client/api-get (client/path "pre_authorizations" id) {} account)
-      map->PreAuthorization))
-(defmethod pre-authorizations
-  clojure.lang.IPersistentMap
-  ([account]
-     (let [preauths (-> (client/path "merchants" (:merchant-id account) {} "pre_authorizations")
-                        (client/api-get account))]
-       (map map->PreAuthorization preauths)))
-  ([params account]
-     (-> (client/path "merchants" (:merchant-id account) "pre_authorizations")
-         (client/api-get params account))))
+  Takes as arguments either the account-map and an ID of a preauth, or the
+  account-map and params."
+  [account & opts]
+  (if (only-id? opts)
+    (-> (c/api-get account (c/path "pre_authorizations" (first opts)) {})
+        map->PreAuthorization)
+    (let [path (c/path "merchants" (:merchant-id account) "pre_authorizations")
+          preauths (c/api-get account path (apply hash-map opts))]
+      (map map->PreAuthorization preauths))))
 
 (defn new-bill
   "Returns the Connect URL for a new Bill.
 
   Required map keys: `:amount`."
-  [{:keys [amount] :as opts} account]
+  [account {:keys [amount] :as opts}]
   {:pre [(number? amount)
          (> amount 1.0)]}
   (let [params (assoc opts :amount (bigdec amount))]
-    (client/new-limit-url "bill" params account)))
+    (c/new-limit-url account "bill" params)))
 
 (defn create-bill
-  [{:keys [amount pre_authorization_id] :as opts} account]
+  [account {:keys [amount pre_authorization_id] :as opts}]
   {:pre [(number? amount)
          (> amount 1.0)
          (string? pre_authorization_id)
          (not (empty? pre_authorization_id))]}
   (let [params (assoc opts :amount (bigdec amount))]
-    (-> (client/api-post "bills" {"bill" params} account)
+    (-> (c/api-post account "bills" {"bill" params})
         map->Bill)))
 
 (defn new-subscription
   "Returns the Connect URL for a new Subscription.
 
   Required map keys: `:amount`, `:interval_length`, `:interval_unit`."
-  [{:keys [amount interval_length interval_unit] :as opts} account]
+  [account {:keys [amount interval_length interval_unit] :as opts}]
   {:pre [(number? amount)
          (number? interval_length)
          (pos? interval_length)
          (contains? #{"day" "week" "month"} interval_unit)]}
   (let [params (assoc opts :amount (bigdec amount))]
-    (client/new-limit-url "subscription" params account)))
+    (c/new-limit-url account "subscription" params)))
 
 (defn new-pre-authorization
   "Returns the Connect URL for a new PreAuthorization.
 
   Required keys: `:max_amount`, `:interval_length`, `:interval_unit`."
-  [{:keys [max_amount interval_length interval_unit] :as opts} account]
+  [account {:keys [max_amount interval_length interval_unit] :as opts}]
   {:pre [(number? max_amount)
          (number? interval_length)
          (pos? interval_length)
          (contains? #{"day" "week" "month"} interval_unit)]}
   (let [params (assoc opts :max_amount (bigdec max_amount))]
-    (client/new-limit-url "pre_authorization" params account)))
+    (c/new-limit-url account "pre_authorization" params)))
 
 (defn confirm-resource
   "Confirm a created limit (bill/subscription/preauthorization).
@@ -198,7 +131,7 @@
 
   `params` is assumed to be a map containing keys and values from the query
   string. Map keys are assumed to be strings."
-  [params account]
+  [account params]
   {:pre [(every? (set (keys params))
                  ["resource_id" "resource_type" "resource_uri" "signature"])]}
   (let [ks [:resource_id :resource_type :resource_uri :state :signature]
@@ -207,6 +140,6 @@
         to-sign (dissoc params :signature)
         data (select-keys params [:resource_id :resource_type])]
     (if (= (:signature params) (sign-params to-sign (:app-secret account)))
-      (client/api-post "confirm" data {:basic-auth [(:app-id account)
-                                                    (:app-secret account)]} account)
+      (c/api-post account "confirm" data {:basic-auth [(:app-id account)
+                                                       (:app-secret account)]})
       false)))

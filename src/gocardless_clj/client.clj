@@ -30,7 +30,7 @@
 
 (defn api-url
   "Produce a correct URL for retrieving resource(s)."
-  [uri account]
+  [account uri]
   (if (.startsWith uri "http")
     uri
     (condp = (:environment account)
@@ -39,15 +39,15 @@
 
 (defn connect-url
   "Produce a correct connect base URL."
-  [resource-type account]
+  [account resource-type]
   (condp = (:environment account)
     :live (format "https://gocardless.com/connect/%ss/new" resource-type)
     :sandbox (format "https://sandbox.gocardless.com/connect/%ss/new" resource-type)))
 
 (defn new-limit-url
   "Produce a correct connect URL for creating a limit."
-  [resource-type limit-params account]
-  (let [url (connect-url resource-type account)
+  [account resource-type limit-params]
+  (let [url (connect-url account resource-type)
         limit-params (-> limit-params stringify-keys underscorize-keys)
         limit-params (assoc limit-params "merchant_id" (:merchant-id account))
 
@@ -78,29 +78,29 @@
 
 (defn api-get
   "Do a GET request to the API."
-  ([uri params account]
-     (api-get uri params {:oauth-token (:access-token account)} account))
-  ([uri params auth-params account]
+  ([account uri params]
+     (api-get account uri params {:oauth-token (:access-token account)}))
+  ([account uri params auth-params]
      (do-request :get
-                 (api-url uri account)
+                 (api-url account uri)
                  (merge auth-params {:query-params params}))))
 
 (defn api-post
   "Do a POST request to the API."
-  ([uri params account]
-     (api-post uri params {:oauth-token (:access-token account)} account))
-  ([uri params auth-params account]
+  ([account uri params]
+     (api-post account uri params {:oauth-token (:access-token account)}))
+  ([account uri params auth-params]
      (do-request :post
-                 (api-url uri account)
+                 (api-url account uri)
                  (merge auth-params {:form-params params
-                                    :content-type :json}))))
+                                     :content-type :json}))))
 
 (defn api-put
   "Do a PUT request to the API."
-  ([uri params account]
-     (api-put uri params {:oauth-token (:access-token account)} account))
-  ([uri params auth-params account]
+  ([account uri params]
+     (api-put account uri params {:oauth-token (:access-token account)}))
+  ([account uri params auth-params]
      (do-request :put
-                 (api-url uri account)
+                 (api-url account uri)
                  (merge auth-params {:form-params params
-                                    :content-type :json}))))
+                                     :content-type :json}))))

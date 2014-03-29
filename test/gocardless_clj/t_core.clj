@@ -12,23 +12,6 @@
               :app-secret "APPSECRET"
               :access-token "ACCESSTOKEN"})
 
-;; Set up a dummy function similar to customers/bills/subscriptions/pre-authorizations
-;; This precisely mirrors the multimethod definition from gocardless-clj.core
-(defmulti dummy (fn [arg & _] (class arg)))
-(defmethod dummy
-  java.lang.String
-  [id account] (format "Show, %s" (:merchant-id account)))
-(defmethod dummy
-  clojure.lang.IPersistentMap
-  ([account] (format "Index, %s" (:merchant-id account)))
-  ([params account] (format "Index with params, %s" (:merchant-id account))))
-
-(fact "(make-account) produces a closure over account details "
-  (let [account-fn (make-account account)]
-    (account-fn dummy) => "Index, MERCHANT1"
-    (account-fn dummy "id") => "Show, MERCHANT1"
-    (account-fn dummy :key "val") => "Index with params, MERCHANT1"))
-
 (fact "(details) queries merchant's endpoint"
   (with-fake-routes-in-isolation
     {
@@ -54,75 +37,75 @@
                     :headers {"Content-Type" "application/json"}
                     :body (json/generate-string [{:id "C1"} {:id "C2"}])})}
     (customers account) => [{:id "C1"} {:id "C2"}]
-    (customers "C1" account) => {:id "C1"}
-    (customers {:per_page 10} account) => [{:id "C1"} {:id "C2"}]))
+    (customers account "C1") => {:id "C1"}
+    (customers account :per_page 10) => [{:id "C1"} {:id "C2"}]))
 
 (facts "(new-bill)"
   (def limit new-bill)
 
-  (limit {:amount "foo"} account) => (throws AssertionError)
-  (limit {:amount 10.0} account) => #"https://sandbox.gocardless.com"
-  (limit {:amount 10.0} account) => #"connect/bills/new"
-  (limit {:amount 10.0} account) => #"signature="
-  (limit {:amount 10.0} account) => #"client_id=APPID"
-  (limit {:amount 10.0} account) => #"timestamp="
-  (limit {:amount 10.0} account) => #"nonce="
-  (limit {:amount 10.0} account) => #"bill%5Bamount%5D=10.0"
-  (limit {:amount 10.0} account) => #"bill%5Bmerchant_id%5D=MERCHANT1")
+  (limit account {:amount "foo"}) => (throws AssertionError)
+  (limit account {:amount 10.0}) => #"https://sandbox.gocardless.com"
+  (limit account {:amount 10.0}) => #"connect/bills/new"
+  (limit account {:amount 10.0}) => #"signature="
+  (limit account {:amount 10.0}) => #"client_id=APPID"
+  (limit account {:amount 10.0}) => #"timestamp="
+  (limit account {:amount 10.0}) => #"nonce="
+  (limit account {:amount 10.0}) => #"bill%5Bamount%5D=10.0"
+  (limit account {:amount 10.0}) => #"bill%5Bmerchant_id%5D=MERCHANT1")
 
 (facts "(new-subscription)"
   (def limit new-subscription)
 
-  (limit {:amount "foo" :interval_length 1 :interval_unit "day"} account)
+  (limit account {:amount "foo" :interval_length 1 :interval_unit "day"})
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval_length 1} account)
+  (limit account {:amount 10.0 :interval_length 1})
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval_length -9 :interval_unit "day"} account)
+  (limit account {:amount 10.0 :interval_length -9 :interval_unit "day"})
   => (throws AssertionError)
 
-  (limit {:amount 10.0 :interval_length 3 :interval_unit "year"} account)
+  (limit account {:amount 10.0 :interval_length 3 :interval_unit "year"})
   => (throws AssertionError)
 
   (let [valid-params {:amount 10.0
                       :interval_length 3
                       :interval_unit "month"}]
-    (limit valid-params account) => #"https://sandbox.gocardless.com"
-    (limit valid-params account) => #"connect/subscriptions/new"
-    (limit valid-params account) => #"signature="
-    (limit valid-params account) => #"client_id=APPID"
-    (limit valid-params account) => #"timestamp="
-    (limit valid-params account) => #"nonce="
-    (limit valid-params account) => #"subscription%5Bamount%5D=10.0"
-    (limit valid-params account) => #"subscription%5Bmerchant_id%5D=MERCHANT1"))
+    (limit account valid-params) => #"https://sandbox.gocardless.com"
+    (limit account valid-params) => #"connect/subscriptions/new"
+    (limit account valid-params) => #"signature="
+    (limit account valid-params) => #"client_id=APPID"
+    (limit account valid-params) => #"timestamp="
+    (limit account valid-params) => #"nonce="
+    (limit account valid-params) => #"subscription%5Bamount%5D=10.0"
+    (limit account valid-params) => #"subscription%5Bmerchant_id%5D=MERCHANT1"))
 
 (facts "(new-pre-authorization)"
   (def limit new-pre-authorization)
 
-  (limit {:max_amount "foo" :interval_length 1 :interval_unit "day"} account)
+  (limit account {:max_amount "foo" :interval_length 1 :interval_unit "day"})
   => (throws AssertionError)
 
-  (limit {:max_amount 10.0 :interval_length 1} account)
+  (limit account {:max_amount 10.0 :interval_length 1})
   => (throws AssertionError)
 
-  (limit {:max_amount 10.0 :interval_length -9 :interval_unit "day"} account)
+  (limit account {:max_amount 10.0 :interval_length -9 :interval_unit "day"})
   => (throws AssertionError)
 
-  (limit {:max_amount 10.0 :interval_length 3 :interval_unit "year"} account)
+  (limit account {:max_amount 10.0 :interval_length 3 :interval_unit "year"})
   => (throws AssertionError)
 
   (let [valid-params {:max_amount 10.0
                       :interval_length 3
                       :interval_unit "month"}]
-    (limit valid-params account) => #"https://sandbox.gocardless.com"
-    (limit valid-params account) => #"connect/pre_authorizations/new"
-    (limit valid-params account) => #"signature="
-    (limit valid-params account) => #"client_id=APPID"
-    (limit valid-params account) => #"timestamp="
-    (limit valid-params account) => #"nonce="
-    (limit valid-params account) => #"pre_authorization%5Bmax_amount%5D=10.0"
-    (limit valid-params account) => #"pre_authorization%5Bmerchant_id%5D=MERCHANT1"))
+    (limit account valid-params) => #"https://sandbox.gocardless.com"
+    (limit account valid-params) => #"connect/pre_authorizations/new"
+    (limit account valid-params) => #"signature="
+    (limit account valid-params) => #"client_id=APPID"
+    (limit account valid-params) => #"timestamp="
+    (limit account valid-params) => #"nonce="
+    (limit account valid-params) => #"pre_authorization%5Bmax_amount%5D=10.0"
+    (limit account valid-params) => #"pre_authorization%5Bmerchant_id%5D=MERCHANT1"))
 
 (with-fake-routes-in-isolation
   {
@@ -138,11 +121,11 @@
                 "signature" "977aab1a7949b00c2dfab0f7816a113d020d9bcdb9c788d67c673b1ec14681b9"
                 "state" "foo"}]
     (facts "(confirm-resource)"
-      (confirm-resource params account) => {:some "data"}
+      (confirm-resource account params) => {:some "data"}
       ;; if the request was tampered with and for example the state param
       ;; was removed or changed
-      (confirm-resource (dissoc params "state") account) => false
-      (confirm-resource (assoc params "state" "bar") account) => false)))
+      (confirm-resource account (dissoc params "state")) => false
+      (confirm-resource account (assoc params "state" "bar")) => false)))
 
 (with-fake-routes-in-isolation
   {
@@ -151,5 +134,5 @@
                          :headers {"Content-Type" "application/json"}
                          :body (json/generate-string {:id "BILLID"})})}}
   (facts "(create-bill)"
-    (create-bill {:amount 10.0 :pre_authorization_id "PREAUTH1"} account)
+    (create-bill account {:amount 10.0 :pre_authorization_id "PREAUTH1"})
     => (map->Bill {:id "BILLID"})))
