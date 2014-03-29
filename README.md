@@ -54,18 +54,18 @@ All the core functionality is available in *core.clj*.
 (bills account)
 
 ;; get a specific bill
-(bills account "id")
+(bills account {:id "id"})
 
 ;; cancel a bill
-(let [my-bill (bills account "id")]
+(let [my-bill (bills account {:id "id"})]
   (when (cancelable? my-bill)
     (cancel my-bill account)))
 
 ;; get the first page of your subscriptions, 10 per page
-(subscriptions account :per_page 10)
+(subscriptions account {:per_page 10})
 
 ;; create a new bill with minimal parameters
-(new-bill account :amount 10.0)
+(new-bill account {:amount 10.0})
 
 ;; create a new bill, but pass in more information
 (new-bill account {:amount 10.0

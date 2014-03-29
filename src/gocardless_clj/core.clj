@@ -8,10 +8,6 @@
 (def retry #'gocardless-clj.protocols/retry)
 (def retriable? #'gocardless-clj.protocols/retriable?)
 
-(defn- only-id?
-  [opts-list]
-  (= (count opts-list) 1))
-
 (defn details
   "Get the account details."
   [account]
@@ -22,62 +18,67 @@
 
   Takes as arguments either the account-map and an ID of a customer, or the
   account-map and params."
-  [account & opts]
-  (if (only-id? opts)
-    (c/api-get account (c/path "users" (first opts)) {})
-    (c/api-get account
-               (c/path "merchants" (:merchant-id account) "users")
-               (apply hash-map opts))))
+  ([account] (customers account {}))
+  ([account {:keys [id] :as params}]
+     (if id
+       (c/api-get account (c/path "users" id) {})
+       (c/api-get account
+                  (c/path "merchants" (:merchant-id account) "users")
+                  params))))
 
 (defn payouts
   "Retrieve merchant's payouts or a single payout.
 
   Takes as arguments either the account-map and an ID of a payout, or the
   account-map and params."
-  [account & opts]
-  (if (only-id? opts)
-    (c/api-get account (c/path "payouts" (first opts)) {})
-    (c/api-get account
-               (c/path "merchants" (:merchant-id account) "payouts")
-               (apply hash-map opts))))
+  ([account] (payouts account {}))
+  ([account {:keys [id] :as params}]
+     (if id
+       (c/api-get account (c/path "payouts" id) {})
+       (c/api-get account
+                  (c/path "merchants" (:merchant-id account) "payouts")
+                  params))))
 
 (defn bills
   "Retrieve merchant's bills or a single bill.
 
   Takes as arguments either the account-map and an ID of a bill, or the
   account-map and params."
-  [account & opts]
-  (if (only-id? opts)
-    (-> (c/api-get account (c/path "bills" (first opts)) {}) map->Bill)
-    (let [path (c/path "merchants" (:merchant-id account) "bills")
-          bills (c/api-get account path (apply hash-map opts))]
-      (map map->Bill bills))))
+  ([account] (bills account {}))
+  ([account {:keys [id] :as params}]
+     (if id
+       (-> (c/api-get account (c/path "bills" id) {}) map->Bill)
+       (let [path (c/path "merchants" (:merchant-id account) "bills")
+             bills (c/api-get account path params)]
+         (map map->Bill bills)))))
 
 (defn subscriptions
   "Retrieve merchant's subscriptions or a single subscription.
 
   Takes as arguments either the account-map and an ID of a subscription, or the
   account-map and params."
-  [account & opts]
-  (if (only-id? opts)
-    (-> (c/api-get account (c/path "subscriptions" (first opts)) {})
-        (map->Subscription))
-    (let [path (c/path "merchants" (:merchant-id account) "subscriptions")
-          subs (c/api-get account path (apply hash-map opts))]
-      (map map->Subscription subs))))
+  ([account] (subscriptions account {}))
+  ([account {:keys [id] :as params}]
+     (if id
+       (-> (c/api-get account (c/path "subscriptions" id) {})
+           (map->Subscription))
+       (let [path (c/path "merchants" (:merchant-id account) "subscriptions")
+             subs (c/api-get account path params)]
+         (map map->Subscription subs)))))
 
 (defn pre-authorizations
   "Retrieve merchant's pre-authorizations or a single pre-authorization.
 
   Takes as arguments either the account-map and an ID of a preauth, or the
   account-map and params."
-  [account & opts]
-  (if (only-id? opts)
-    (-> (c/api-get account (c/path "pre_authorizations" (first opts)) {})
-        map->PreAuthorization)
-    (let [path (c/path "merchants" (:merchant-id account) "pre_authorizations")
-          preauths (c/api-get account path (apply hash-map opts))]
-      (map map->PreAuthorization preauths))))
+  ([account] (pre-authorizations account {}))
+  ([account {:keys [id] :as params}]
+     (if id
+       (-> (c/api-get account (c/path "pre_authorizations" id) {})
+           map->PreAuthorization)
+       (let [path (c/path "merchants" (:merchant-id account) "pre_authorizations")
+             preauths (c/api-get account path params)]
+         (map map->PreAuthorization preauths)))))
 
 (defn new-bill
   "Returns the Connect URL for a new Bill.

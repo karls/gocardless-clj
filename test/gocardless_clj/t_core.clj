@@ -37,8 +37,8 @@
                     :headers {"Content-Type" "application/json"}
                     :body (json/generate-string [{:id "C1"} {:id "C2"}])})}
     (customers account) => [{:id "C1"} {:id "C2"}]
-    (customers account "C1") => {:id "C1"}
-    (customers account :per_page 10) => [{:id "C1"} {:id "C2"}]))
+    (customers account {:id "C1"}) => {:id "C1"}
+    (customers account {:per_page 10}) => [{:id "C1"} {:id "C2"}]))
 
 (facts "(new-bill)"
   (def limit new-bill)
