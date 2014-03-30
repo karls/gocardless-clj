@@ -19,6 +19,12 @@
 (def retry       #'gocardless-clj.protocols/retry)
 (def retriable?  #'gocardless-clj.protocols/retriable?)
 
+(declare customers)
+(declare payouts)
+(declare bills)
+(declare subscriptions)
+(declare pre-authorizations)
+
 ;; ## Resource lookup functions
 ;;
 ;; Every resource has a singular and a plural version. For example the customer
@@ -67,7 +73,7 @@
 
     (payout account \"0K636ZDWM9\")"
   [account id]
-  (c/api-get account (c/path "payouts" id) {}))
+  (payouts account {:id id}))
 
 (defn payouts
   "Retrieve merchant's payouts or a single payout.
@@ -95,7 +101,7 @@
 
     (bill account \"0K636ZDWM9\")"
   [account id]
-  (map->Bill (c/api-get account (c/path "bills" id) {}) map->Bill))
+  (bills account {:id id}))
 
 (defn bills
   "Retrieve merchant's bills or a single bill.
@@ -123,7 +129,7 @@
 
     (subscription account \"0K636ZDWM9\")"
   [account id]
-  (map->Subscription (c/api-get account (c/path "subscriptions" id) {})))
+  (subscriptions account {:id id}))
 
 (defn subscriptions
   "Retrieve merchant's subscriptions or a single subscription.
@@ -152,7 +158,7 @@
 
     (pre-authorization account \"0K636ZDWM9\")"
   [account id]
-  (map->PreAuthorization (c/api-get account (c/path "pre_authorizations" id) {})))
+  (pre-authorizations account {:id id}))
 
 (defn pre-authorizations
   "Retrieve merchant's pre-authorizations or a single pre-authorization.
