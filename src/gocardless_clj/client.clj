@@ -1,3 +1,5 @@
+;; # HTTP client wrapper and other utilities
+
 (ns gocardless-clj.client
   (:require [clojure.walk :refer [stringify-keys]]
             [clj-http.client :as client]

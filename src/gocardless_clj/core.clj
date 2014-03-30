@@ -1,5 +1,14 @@
-;; # Client library for the [GoCardless API](https://developer.gocardless.com/#introduction)
+;; # Core API functions
 ;;
+;; This namespace contains the public API functions for this client library.
+;;
+;; ### At a high level, you can:
+;; * Look up account details for your merchant
+;; * Look up customers, bills, subscriptions, pre-authorizations and payouts
+;; * Generate a URL for a new bill, subscription or a pre-authorization
+;; * Create a new bill under an existing pre-authorization
+;; * Confirm a created resource
+
 (ns gocardless-clj.core
   (:require [gocardless-clj.client :as c]
             [gocardless-clj.resources :refer :all]
@@ -10,18 +19,7 @@
 (def retry       #'gocardless-clj.protocols/retry)
 (def retriable?  #'gocardless-clj.protocols/retriable?)
 
-;; ## Fetch details for the authenticating merchant
-;;
-(defn details
-  "Get the account details.
-
-  Example:
-
-    (details account)"
-  [account]
-  (c/api-get account (c/path "merchants" (:merchant-id account)) {}))
-
-;; ## Core resource lookup functions
+;; ## Resource lookup functions
 ;;
 ;; Every resource has a singular and a plural version. For example the customer
 ;; function comes in two variants - `customer` and `customers`. The singular
@@ -33,7 +31,7 @@
 ;; contain any keys outlined in [Filtering](https://developer.gocardless.com/#filtering)
 ;; and [Pagination](https://developer.gocardless.com/#pagination). The map
 ;; can be omitted or left empty, in which case the defaults are used.
-;;
+
 (defn customer
   "Retrieve a single customer by their ID.
 
@@ -70,6 +68,7 @@
     (payout account \"0K636ZDWM9\")"
   [account id]
   (c/api-get account (c/path "payouts" id) {}))
+
 (defn payouts
   "Retrieve merchant's payouts or a single payout.
 
@@ -177,18 +176,15 @@
 
 ;; ## Resource creation functions
 ;;
-(defn new-bill
-  "Returns the Connect URL for a new Bill.
-
-  Required map keys: `:amount`."
-  [account {:keys [amount] :as opts}]
-  {:pre [(number? amount)
-         (> amount 1.0)]}
-  (let [params (assoc opts :amount (bigdec amount))]
-    (c/new-limit-url account "bill" params)))
-
 (defn create-bill
-  "Creates a new bill under an existing pre-authorization."
+  "Creates a new bill under an existing pre-authorization.
+
+  Takes as arguments the account map and a params map containing the amount and
+  the pre-authorization ID.
+
+  Example:
+
+    (create-bill account {:amount 15.0 :pre_authorization_id \"0K636ZDWM9\"})"
   [account {:keys [amount pre_authorization_id] :as opts}]
   {:pre [(number? amount)
          (> amount 1.0)
@@ -198,10 +194,40 @@
     (-> (c/api-post account "bills" {"bill" params})
         map->Bill)))
 
+(defn new-bill
+  "Returns the Connect URL for a new Bill.
+
+  Required map keys: `:amount`.
+
+  Example:
+
+    (new-bill account {:amount 10.0})
+    (new-bill account {:amount 10.0
+                       :name \"My new bill\"
+                       :user {:email \"customer1@example.com\"
+                              :first_name \"Joe\"
+                              :last_name \"Bloggs\"}})"
+  [account {:keys [amount] :as opts}]
+  {:pre [(number? amount)
+         (> amount 1.0)]}
+  (let [params (assoc opts :amount (bigdec amount))]
+    (c/new-limit-url account "bill" params)))
+
 (defn new-subscription
   "Returns the Connect URL for a new Subscription.
 
-  Required map keys: `:amount`, `:interval_length`, `:interval_unit`."
+  Required map keys: `:amount`, `:interval_length`, `:interval_unit`.
+
+  Example:
+
+    (new-subscription account {:amount 10.0
+                               :interval_length 4
+                               :interval_unit \"week\"})
+    (new-subscription account {:amount 10.0
+                               :interval_length 1
+                               :interval_unit \"day\"
+                               :name \"My new subscription\"
+                               :user {...}})"
   [account {:keys [amount interval_length interval_unit] :as opts}]
   {:pre [(number? amount)
          (number? interval_length)
@@ -213,7 +239,18 @@
 (defn new-pre-authorization
   "Returns the Connect URL for a new PreAuthorization.
 
-  Required keys: `:max_amount`, `:interval_length`, `:interval_unit`."
+  Required keys: `:max_amount`, `:interval_length`, `:interval_unit`.
+
+  Example:
+
+    (new-pre-authorization account {:max_amount 10.0
+                                    :interval_length 4
+                                    :interval_unit \"week\"})
+    (new-pre-authorization account {:max_amount 10.0
+                                    :interval_length 1
+                                    :interval_unit \"day\"
+                                    :name \"My new preauth\"
+                                    :user {...}})"
   [account {:keys [max_amount interval_length interval_unit] :as opts}]
   {:pre [(number? max_amount)
          (number? interval_length)
@@ -222,8 +259,19 @@
   (let [params (assoc opts :max_amount (bigdec max_amount))]
     (c/new-limit-url account "pre_authorization" params)))
 
+;; ## Authenticating merchant's details
+
+(defn details
+  "Get the account details.
+
+  Example:
+
+    (details account)"
+  [account]
+  (c/api-get account (c/path "merchants" (:merchant-id account)) {}))
+
 ;; ## Resource confirmation
-;;
+
 (defn confirm-resource
   "Confirm a created limit (bill/subscription/preauthorization).
 
@@ -231,7 +279,12 @@
   confirmed and `false` is returned.
 
   `params` is assumed to be a map containing keys and values from the query
-  string. Map keys are assumed to be strings."
+  string. Map keys are assumed to be strings.
+
+  Example:
+
+    (let [params (:query-params request)]
+      (confirm-resource account params))"
   [account params]
   {:pre [(every? (set (keys params))
                  ["resource_id" "resource_type" "resource_uri" "signature"])]}

@@ -34,7 +34,9 @@ Just copy and paste the relevant line from Clojars into your *project.clj*.
 
 ## Usage
 
-All the core functionality is available in *core.clj*.
+All the core functionality is available in *core.clj*. Marginalia-generated API
+docs are available on Github Pages. You should look at the
+[section for the core namespace](http://karls.github.io/gocardless-clj/#gocardless-clj.core)
 
 ```clj
 (ns user

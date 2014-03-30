@@ -1,4 +1,4 @@
-(defproject gocardless-clj "0.4.0"
+(defproject gocardless-clj "0.4.1"
   :description "Clojure client library for the GoCardless API"
   :url "https://github.com/karls/gocardless-clj"
   :license {:name "MIT License"
@@ -8,7 +8,8 @@
                                   [compojure "1.1.6"]
                                   [javax.servlet/servlet-api "2.5"]]
                    :plugins [[lein-midje "3.1.3"]
-                             [lein-ring "0.8.10"]]
+                             [lein-ring "0.8.10"]
+                             [lein-marginalia "0.7.1"]]
                    :source-paths ["src" "example"]
                    :ring {:handler example-app/app}}}
   :dependencies [[org.clojure/clojure "1.5.1"]

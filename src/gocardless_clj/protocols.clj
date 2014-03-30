@@ -1,12 +1,12 @@
 (ns gocardless-clj.protocols)
 
 (defprotocol PFlattenable
-  (flatten-params [coll ns]
-    "Flatten params according to the
-    [signature guide](https://developer.gocardless.com/#signature-guide).
+  "Flatten params according to the
+  [signature guide](https://developer.gocardless.com/#signature-guide).
 
-    `gocardless-clj.signature` namespace contains the extension of this
-    protocol for different data types/structures."))
+  `gocardless-clj.signature` namespace contains the extension of this
+  protocol for different data types/structures."
+  (flatten-params [coll ns]))
 
 (defprotocol PCancellable
   (cancelable? [resource] "Check if the resource can be cancelled.")

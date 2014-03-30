@@ -1,3 +1,8 @@
+;; ## Signature calculation functions
+;;
+;; Implements signature calculation according to the
+;; [signature guide](https://developer.gocardless.com/#signature-guide).
+;;
 (ns gocardless-clj.signature
   (:require [pandect.core :refer [sha256-hmac]]
             [gocardless-clj.protocols :refer [flatten-params]])
