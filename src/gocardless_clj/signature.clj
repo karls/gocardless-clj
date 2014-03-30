@@ -70,5 +70,7 @@
     (clojure.string/join "&" (map normalise-keyval flattened-sorted))))
 
 (defn sign-params
+  "Sign the normalised params with SHA256 using a key. The key in this case is
+  the app secret."
   [params key]
   (-> params normalise-params (sha256-hmac key)))
