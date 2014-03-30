@@ -19,11 +19,10 @@ that the API is in a bit of a flux and may change at any time.
 
 * Automatic pagination of results is not supported, which means that you'll have
   to paginate manually.
-* Filtering **should** work out of the box, as passing query string parameters
-  is supported.
+* Filtering ~~should work~~ works out of the box.
 * Handling webhooks are currently not supported.
-* Pre-populating fields for Connect flow pages is supported and should work out
-  of the box.
+* Pre-populating fields for Connect flow pages is supported and works out of the
+  box.
 
 See the GoCardless API docs for notes on filtering and pagination.
 
@@ -36,7 +35,7 @@ Just copy and paste the relevant line from Clojars into your *project.clj*.
 
 All the core functionality is available in *core.clj*. Marginalia-generated API
 docs are available on Github Pages. You should look at the
-[section for the core namespace](http://karls.github.io/gocardless-clj/#gocardless-clj.core)
+[section for the core namespace](http://karls.github.io/gocardless-clj/#gocardless-clj.core).
 
 ```clj
 (ns user
@@ -56,20 +55,25 @@ docs are available on Github Pages. You should look at the
 (bills account)
 
 ;; get a specific bill
-(bills account {:id "id"})
+(bill account "bill-id")
+
+;; the former is equivalent to this
+(bills account {:id "bill-id"})
+;; but you can pass other arguments in the map for filtering and/or pagination
+(bills account {:per_page 4 :page 2 :paid true})
 
 ;; cancel a bill
-(let [my-bill (bills account {:id "id"})]
+(let [my-bill (bill account "bill-id")]
   (when (cancelable? my-bill)
     (cancel my-bill account)))
 
 ;; get the first page of your subscriptions, 10 per page
 (subscriptions account {:per_page 10})
 
-;; create a new bill with minimal parameters
+;; create a new bill URL with minimal parameters
 (new-bill account {:amount 10.0})
 
-;; create a new bill, but pass in more information
+;; create a new bill URL, but pass in more information
 (new-bill account {:amount 10.0
 	               :name "My first bill"
 				   :user {:email "customer.email@example.com"
