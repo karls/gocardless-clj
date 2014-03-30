@@ -3028,7 +3028,7 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>gocardless-clj -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">gocardless-clj</h1><h2 class="project-version">0.4.0</h2><br /><p>Clojure client library for the GoCardless API</p>
+</script><title>gocardless-clj -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">gocardless-clj</h1><h2 class="project-version">0.4.1</h2><br /><p>Clojure client library for the GoCardless API</p>
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.5.1</td></tr><tr><td class="dep-name">pandect</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0</td></tr><tr><td class="dep-name">clj-http</td><td class="dotted"><hr /></td><td class="dep-version">0.7.8</td></tr><tr><td class="dep-name">org.clojure/data.json</td><td class="dotted"><hr /></td><td class="dep-version">0.2.4</td></tr><tr><td class="dep-name">clj-time</td><td class="dotted"><hr /></td><td class="dep-version">0.6.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#gocardless-clj.client">gocardless-clj.client</a></li><li><a href="#gocardless-clj.core">gocardless-clj.core</a></li><li><a href="#gocardless-clj.protocols">gocardless-clj.protocols</a></li><li><a href="#gocardless-clj.resources">gocardless-clj.resources</a></li><li><a href="#gocardless-clj.signature">gocardless-clj.signature</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#gocardless-clj.client" name="gocardless-clj.client"><h1 class="project-name">gocardless-clj.client</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h1>HTTP client wrapper and other utilities</h1>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns gocardless-clj.client
@@ -3134,7 +3134,12 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(def cancel      #'gocardless-clj.protocols/cancel)
 (def cancelable? #'gocardless-clj.protocols/cancelable?)
 (def retry       #'gocardless-clj.protocols/retry)
-(def retriable?  #'gocardless-clj.protocols/retriable?)</pre></td></tr><tr><td class="docs"><h2>Resource lookup functions</h2>
+(def retriable?  #'gocardless-clj.protocols/retriable?)</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(declare customers)
+(declare payouts)
+(declare bills)
+(declare subscriptions)
+(declare pre-authorizations)</pre></td></tr><tr><td class="docs"><h2>Resource lookup functions</h2>
 
 <p>Every resource has a singular and a plural version. For example the customer
 function comes in two variants - <code>customer</code> and <code>customers</code>. The singular
@@ -3180,7 +3185,7 @@ can be omitted or left empty, in which case the defaults are used.</p>
 </code></pre>
 </td><td class="codes"><pre class="brush: clojure">(defn payout
   [account id]
-  (c/api-get account (c/path &quot;payouts&quot; id) {}))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's payouts or a single payout.</p>
+  (payouts account {:id id}))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's payouts or a single payout.</p>
 
 <p>  Takes as arguments either the account-map and no other params, or the
   account-map and a map of params.</p>
@@ -3206,7 +3211,7 @@ can be omitted or left empty, in which case the defaults are used.</p>
 </code></pre>
 </td><td class="codes"><pre class="brush: clojure">(defn bill
   [account id]
-  (map-&gt;Bill (c/api-get account (c/path &quot;bills&quot; id) {}) map-&gt;Bill))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's bills or a single bill.</p>
+  (bills account {:id id}))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's bills or a single bill.</p>
 
 <p>  Takes as arguments either the account-map and an ID of a bill, or the
   account-map and params.</p>
@@ -3232,7 +3237,7 @@ can be omitted or left empty, in which case the defaults are used.</p>
 </code></pre>
 </td><td class="codes"><pre class="brush: clojure">(defn subscription
   [account id]
-  (map-&gt;Subscription (c/api-get account (c/path &quot;subscriptions&quot; id) {})))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's subscriptions or a single subscription.</p>
+  (subscriptions account {:id id}))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's subscriptions or a single subscription.</p>
 
 <p>  Takes as arguments either the account-map and no other arguments, or the
   account-map and a map of params.</p>
@@ -3259,7 +3264,7 @@ can be omitted or left empty, in which case the defaults are used.</p>
 </code></pre>
 </td><td class="codes"><pre class="brush: clojure">(defn pre-authorization
   [account id]
-  (map-&gt;PreAuthorization (c/api-get account (c/path &quot;pre_authorizations&quot; id) {})))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's pre-authorizations or a single pre-authorization.</p>
+  (pre-authorizations account {:id id}))</pre></td></tr><tr><td class="docs"><p>Retrieve merchant's pre-authorizations or a single pre-authorization.</p>
 
 <p>  Takes as arguments either the account-map and no other arguments, or the
   account-map and a map of params.</p>
