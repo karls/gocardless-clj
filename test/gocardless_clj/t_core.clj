@@ -12,6 +12,34 @@
               :app-secret "APPSECRET"
               :access-token "ACCESSTOKEN"})
 
+(def valid-webhook-params
+  {
+   "payload" {
+              "bills" [
+                       {"id" "123456",
+                        "status" "pending",
+                        "uri" "https://sandbox.gocardless.com/api/v1/bills/123456",
+                        "amount" "20.0",
+                        "amount_minus_fees" "19.8"}
+                       ],
+              "resource_type" "bill",
+              "action" "created",
+              "signature" "d8075b35c408462e6ff7424aab930cc0ca6a6b52d0470ba2b5c33fd77e8027e2"}})
+
+(def invalid-webhook-params
+  {
+   "payload" {
+              "bills" [
+                       {"id" "123456",
+                        "status" "pending",
+                        "uri" "https://sandbox.gocardless.com/api/v1/bills/123456",
+                        "amount" "20.0",
+                        "amount_minus_fees" "19.8"}
+                       ],
+              "resource_type" "bill",
+              "action" "created",
+              "signature" "invalid-signature"}})
+
 (fact "(details) queries merchant's endpoint"
   (with-fake-routes-in-isolation
     {
@@ -136,3 +164,7 @@
   (facts "(create-bill)"
     (create-bill account {:amount 10.0 :pre_authorization_id "PREAUTH1"})
     => (map->Bill {:id "BILLID"})))
+
+(facts "(webhook-valid?)"
+  (webhook-valid? account valid-webhook-params)   => true
+  (webhook-valid? account invalid-webhook-params) => false)

@@ -9,20 +9,27 @@ in the UK (BACS) and European Union (SEPA) for low-cost bank-to-bank payments.
 
 [![Build Status](https://travis-ci.org/karls/gocardless-clj.png?branch=master)](https://travis-ci.org/karls/gocardless-clj)
 
-The library implements most of the functionality for merchants, as
-described in the GoCardless API docs. Partner integrations are currently not
-supported.
+The library implements most of the functionality for merchants, as described in
+the GoCardless API docs.
 
 Although the API is pretty clean and should be fairly easy to use, some nice
 things are not yet in place or are rough around the edges. This also means
 that the API is in a bit of a flux and may change at any time.
 
-* Automatic pagination of results is not supported, which means that you'll have
-  to paginate manually.
-* Filtering ~~should work~~ works out of the box.
-* Handling webhooks are currently not supported.
-* Pre-populating fields for Connect flow pages is supported and works out of the
-  box.
+Currently supported:
+* Manual pagination of results
+* Filtering resources
+* Fetching details for your merchant
+* Looking up customer, bills, subscriptions, pre-authorizations and payouts
+* Generating Connect URLs for bills, subscriptions and pre-authorizations
+* Confirming a new resource
+* Pre-populating customer details for the Connect flow
+* Creating a bill under an existing pre-authorization
+* Validating webhooks
+
+Currently not supported:
+* Automatic pagination of results
+* Partner integration
 
 See the GoCardless API docs for notes on filtering and pagination.
 
@@ -132,6 +139,12 @@ app.
 Now, when you navigate to, say, http://6b2806c0.ngrok.com/example-bill
 and go through the GoCardless' Connect flow, the resource should be confirmed
 and the response should be something like `{:success true}`.
+
+Webhooks can be tested in a similar way. There is a Webhook tool in the developer
+panel that can be used to generate webhooks against the example app. Make sure
+the Web Hook URL is correct, i.e pointing to the URL similar to
+http://6b2806c0.ngrok.com/webhook/. The endpoint simply prints `true` or `false`
+depending on whether or not the webhook is valid.
 
 ## Contributing
 

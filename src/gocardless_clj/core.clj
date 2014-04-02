@@ -303,3 +303,10 @@
       (c/api-post account "confirm" data {:basic-auth [(:app-id account)
                                                        (:app-secret account)]})
       false)))
+
+(defn webhook-valid?
+  [account params]
+  (let [payload (get params "payload")
+        signature (get payload "signature")
+        params-to-sign (dissoc payload "signature")]
+    (= signature (sign-params params-to-sign (:app-secret account)))))

@@ -3,7 +3,8 @@
   (:use gocardless-clj.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [ring.util.response :refer [redirect]]))
+            [ring.util.response :refer [redirect]]
+            [ring.middleware.json-params :refer [wrap-json-params]]))
 
 (def account {:environment :sandbox
               :merchant-id "merchant id"
@@ -35,8 +36,14 @@
        request
        (str (confirm-resource account (:query-params request))))
 
+  (POST "/webhook/"
+        {params :params}
+        (str (webhook-valid? account params)))
+
   (route/resources "/")
   (route/not-found "Not Found"))
 
 (def app
-  (handler/site app-routes))
+  (-> app-routes
+      wrap-json-params
+      handler/site))
