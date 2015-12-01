@@ -1,4 +1,4 @@
-(defproject gocardless-clj "0.5.0"
+(defproject gocardless-clj "0.5.1"
   :description "Clojure client library for the GoCardless API"
   :url "https://github.com/karls/gocardless-clj"
   :license {:name "MIT License"

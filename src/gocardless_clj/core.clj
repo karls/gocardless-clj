@@ -12,18 +12,8 @@
 (ns gocardless-clj.core
   (:require [gocardless-clj.client :as c]
             [gocardless-clj.resources :refer :all]
+            [gocardless-clj.protocols :refer :all]
             [gocardless-clj.signature :refer [sign-params]]))
-
-(def cancel      #'gocardless-clj.protocols/cancel)
-(def cancelable? #'gocardless-clj.protocols/cancelable?)
-(def retry       #'gocardless-clj.protocols/retry)
-(def retriable?  #'gocardless-clj.protocols/retriable?)
-
-(declare customers)
-(declare payouts)
-(declare bills)
-(declare subscriptions)
-(declare pre-authorizations)
 
 ;; ## Resource lookup functions
 ;;
@@ -37,15 +27,6 @@
 ;; contain any keys outlined in [Filtering](https://developer.gocardless.com/#filtering)
 ;; and [Pagination](https://developer.gocardless.com/#pagination). The map
 ;; can be omitted or left empty, in which case the defaults are used.
-
-(defn customer
-  "Retrieve a single customer by their ID.
-
-  Example:
-
-    (customer account \"0K636ZDWM9\")"
-  [account id]
-  (customers account {:id id}))
 
 (defn customers
   "Retrieve merchant's customers or a single customer.
@@ -66,14 +47,14 @@
                   (c/path "merchants" (:merchant-id account) "users")
                   params))))
 
-(defn payout
-  "Retrieve a single payout by the payout ID.
+(defn customer
+  "Retrieve a single customer by their ID.
 
   Example:
 
-    (payout account \"0K636ZDWM9\")"
+    (customer account \"0K636ZDWM9\")"
   [account id]
-  (payouts account {:id id}))
+  (customers account {:id id}))
 
 (defn payouts
   "Retrieve merchant's payouts or a single payout.
@@ -94,14 +75,14 @@
                   (c/path "merchants" (:merchant-id account) "payouts")
                   params))))
 
-(defn bill
-  "Retrieve a single bill by the bill ID.
+(defn payout
+  "Retrieve a single payout by the payout ID.
 
   Example:
 
-    (bill account \"0K636ZDWM9\")"
+    (payout account \"0K636ZDWM9\")"
   [account id]
-  (bills account {:id id}))
+  (payouts account {:id id}))
 
 (defn bills
   "Retrieve merchant's bills or a single bill.
@@ -122,14 +103,14 @@
              bills (c/api-get account path params)]
          (map map->Bill bills)))))
 
-(defn subscription
-  "Retrieve a single subscription by the subscription ID.
+(defn bill
+  "Retrieve a single bill by the bill ID.
 
   Example:
 
-    (subscription account \"0K636ZDWM9\")"
+    (bill account \"0K636ZDWM9\")"
   [account id]
-  (subscriptions account {:id id}))
+  (bills account {:id id}))
 
 (defn subscriptions
   "Retrieve merchant's subscriptions or a single subscription.
@@ -151,14 +132,14 @@
              subs (c/api-get account path params)]
          (map map->Subscription subs)))))
 
-(defn pre-authorization
-  "Retrieve a single pre-authorization by the pre-authorization ID.
+(defn subscription
+  "Retrieve a single subscription by the subscription ID.
 
   Example:
 
-    (pre-authorization account \"0K636ZDWM9\")"
+    (subscription account \"0K636ZDWM9\")"
   [account id]
-  (pre-authorizations account {:id id}))
+  (subscriptions account {:id id}))
 
 (defn pre-authorizations
   "Retrieve merchant's pre-authorizations or a single pre-authorization.
@@ -179,6 +160,15 @@
        (let [path (c/path "merchants" (:merchant-id account) "pre_authorizations")
              preauths (c/api-get account path params)]
          (map map->PreAuthorization preauths)))))
+
+(defn pre-authorization
+  "Retrieve a single pre-authorization by the pre-authorization ID.
+
+  Example:
+
+    (pre-authorization account \"0K636ZDWM9\")"
+  [account id]
+  (pre-authorizations account {:id id}))
 
 ;; ## Resource creation functions
 ;;
