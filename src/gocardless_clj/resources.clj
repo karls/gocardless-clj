@@ -9,9 +9,8 @@
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (do
-        (client/api-put account (client/path (:uri resource) "cancel") {})
-        true)))
+      (client/api-put account (client/path (:uri resource) "cancel") {})
+      true))
 
   gocardless-clj.protocols/PRetriable
   (retriable? [resource]
@@ -19,28 +18,25 @@
 
   (retry [resource account]
     (when (retriable? resource)
-      (do
-        (client/api-post account (client/path (:uri resource) "retry") {})
-        true))))
+      (client/api-post account (client/path (:uri resource) "retry") {})
+      true)))
 
 (defrecord Subscription [id]
   gocardless-clj.protocols/PCancellable
   (cancelable? [resource]
-    (not (= "cancelled" (:status resource))))
+    (not= "cancelled" (:status resource)))
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (do
-        (client/api-put account (client/path (:uri resource) "cancel") {})
-        true))))
+      (client/api-put account (client/path (:uri resource) "cancel") {})
+      true)))
 
 (defrecord PreAuthorization [id]
   gocardless-clj.protocols/PCancellable
   (cancelable? [resource]
-    (not (= "cancelled" (:status resource))))
+    (not= "cancelled" (:status resource)))
 
   (cancel [resource account]
     (when (cancelable? resource)
-      (do
-        (client/api-put account (client/path (:uri resource) "cancel") {})
-        true))))
+      (client/api-put account (client/path (:uri resource) "cancel") {})
+      true)))

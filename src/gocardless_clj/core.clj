@@ -98,7 +98,7 @@
   ([account] (bills account {}))
   ([account {:keys [id] :as params}]
      (if id
-       (-> (c/api-get account (c/path "bills" id) {}) map->Bill)
+       (map->Bill (c/api-get account (c/path "bills" id) {}))
        (let [path (c/path "merchants" (:merchant-id account) "bills")
              bills (c/api-get account path params)]
          (map map->Bill bills)))))
@@ -126,8 +126,7 @@
   ([account] (subscriptions account {}))
   ([account {:keys [id] :as params}]
      (if id
-       (-> (c/api-get account (c/path "subscriptions" id) {})
-           (map->Subscription))
+       (map->Subscription (c/api-get account (c/path "subscriptions" id) {}))
        (let [path (c/path "merchants" (:merchant-id account) "subscriptions")
              subs (c/api-get account path params)]
          (map map->Subscription subs)))))
@@ -155,8 +154,7 @@
   ([account] (pre-authorizations account {}))
   ([account {:keys [id] :as params}]
      (if id
-       (-> (c/api-get account (c/path "pre_authorizations" id) {})
-           map->PreAuthorization)
+       (map->PreAuthorization (c/api-get account (c/path "pre_authorizations" id) {}))
        (let [path (c/path "merchants" (:merchant-id account) "pre_authorizations")
              preauths (c/api-get account path params)]
          (map map->PreAuthorization preauths)))))
@@ -187,8 +185,7 @@
          (string? pre_authorization_id)
          (not (empty? pre_authorization_id))]}
   (let [params (assoc opts :amount (bigdec amount))]
-    (-> (c/api-post account "bills" {"bill" params})
-        map->Bill)))
+    (map->Bill (c/api-post account "bills" {"bill" params}))))
 
 (defn new-bill
   "Returns the Connect URL for a new Bill.

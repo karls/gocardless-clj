@@ -27,8 +27,7 @@
 (defn- generate-nonce
   "Generate a nonce for a Connect request."
   []
-  (-> (java.math.BigInteger. 256 secure-random)
-      (.toString 32)))
+  (.toString (java.math.BigInteger. 256 secure-random) 32))
 
 (defn api-url
   "Produce a correct URL for retrieving resource(s)."
@@ -61,11 +60,11 @@
                      "client_id" (:app-id account)
                      resource-type limit-params}
         params (merge base-params meta-params)
-        signature (-> params (sign-params (:app-secret account)))
+        signature (sign-params params (:app-secret account))
         params (merge {"signature" signature} params)]
     (str url
          "?"
-         (-> params normalise-params))))
+         (normalise-params params))))
 
 (defn do-request
   "Worker function for `api-get`, `api-post` and `api-put`."
